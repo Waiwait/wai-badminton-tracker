@@ -14,7 +14,7 @@
     {% for player in available_players %}
       <div>
         {{ player.name }}
-        <form method="POST" action="{% url 'add_player' session.uuid %}">
+        <form method="POST" action="{% url "add_player" session.uuid %}">
           {% csrf_token %}
           <input type="hidden" name="player_id" value="{{ player.id }}">
           <button>Add</button>
@@ -31,7 +31,7 @@
       <div>
         {{ player.name }}
 
-        <form method="POST" action="{% url 'remove_player' session.uuid player.id %}">
+        <form method="POST" action="{% url "remove_player" session.uuid player.id %}">
           {% csrf_token %}
           <button>Remove</button>
         </form>

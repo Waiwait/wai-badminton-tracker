@@ -3,7 +3,7 @@ from django.db import models
 
 class Player(models.Model):
     name = models.CharField(max_length=100)
-    gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], default='M')
+    gender = models.CharField(max_length=10, choices=[("M", "Male"), ("F", "Female")], default="M")
     MMR = models.IntegerField(default=1300)
 
     def __str__(self):
@@ -33,14 +33,14 @@ class PlayerSession(models.Model):
     pause = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('session', 'player')
+        unique_together = ("session", "player")
 
 
 class Match(models.Model):
-    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='matches')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="matches")
     court = models.IntegerField(null=True, blank=True)
     score = models.CharField(max_length=50, blank=True)
-    winning_team = models.IntegerField(null=True, blank=True, choices=[(1, 'Team 1'), (2, 'Team 2')])
+    winning_team = models.IntegerField(null=True, blank=True, choices=[(1, "Team 1"), (2, "Team 2")])
     finished = models.BooleanField(default=False)
 
     def __str__(self):
@@ -50,4 +50,4 @@ class Match(models.Model):
 class MatchParticipant(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    team = models.IntegerField(choices=[(1, 'Team 1'), (2, 'Team 2')])
+    team = models.IntegerField(choices=[(1, "Team 1"), (2, "Team 2")])
