@@ -1,0 +1,5 @@
+<select name="player_id">
+  {% for player in all_players %}
+    <option value="{{ player.id }}">{{ player.name }}</option>
+  {% endfor %}
+</select>
