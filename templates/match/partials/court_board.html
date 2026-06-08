@@ -1,0 +1,43 @@
+<div class="court-grid">
+
+  {% for item in court_data %}
+    <div class="court-card">
+
+      <div class="court-header">
+        Court {{ item.court.number }}
+      </div>
+
+      {% if item.match %}
+
+        <div class="teams">
+          <div class="team">
+            Team 1
+          </div>
+
+          <div class="vs">VS</div>
+
+          <div class="team">
+            Team 2
+          </div>
+        </div>
+
+        <div class="score">
+          {{ item.match.score|default:"0 - 0" }}
+        </div>
+
+        <div class="status live">
+          LIVE
+        </div>
+
+      {% else %}
+
+        <div class="empty">
+          ?
+        </div>
+
+      {% endif %}
+
+    </div>
+  {% endfor %}
+
+</div>

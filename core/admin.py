@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import Player, Session, PlayerSession, Match, MatchParticipant
+from .models import Player, Session, PlayerSession, Match, MatchParticipant, Court
 
 from django.urls import reverse
 from django.utils.html import format_html
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "gender", "MMR")
+    list_display = ("name", "gender", "strength")
     list_filter = ("gender",)
     search_fields = ("name",)
     ordering = ("-strength",)
@@ -43,3 +43,10 @@ class MatchParticipantAdmin(admin.ModelAdmin):
 class PlayerSessionAdmin(admin.ModelAdmin):
     list_display = ("session", "player", "pause")
     list_filter = ("pause",)
+
+
+@admin.register(Court)
+class CourtAdmin(admin.ModelAdmin):
+    list_display = ("number", "session")
+    list_filter = ("session",)
+    ordering = ("session", "number")

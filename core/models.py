@@ -48,16 +48,24 @@ class PlayerSession(models.Model):
         unique_together = ("session", "player")
 
 
+class Court(models.Model):
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="courts")
+    number = models.IntegerField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Court {self.number}"
+
 class Match(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="matches")
-    court = models.IntegerField(null=True, blank=True)
+    court = models.ForeignKey(Court, null=True, blank=True, on_delete=models.SET_NULL, related_name="matches")
     score = models.CharField(max_length=50, blank=True)
     winning_team = models.IntegerField(null=True, blank=True, choices=[(1, "Team 1"), (2, "Team 2")])
     finished = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Match {self.id} on Court {self.court}"
-
+    
 
 class MatchParticipant(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)

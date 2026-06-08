@@ -31,8 +31,16 @@ else:
 EOF
 
 echo "✅ Starting Gunicorn..."
-exec gunicorn wai_badminton_tracker.wsgi:application \
-    --bind 0.0.0.0:8000 \
-    --workers 2 \
-    --threads 2 \
-    --log-level info
+if [ "$DJANGO_DEBUG" = "True" ]; then
+    echo "🟡 DEBUG mode ON (Django runserver)"
+
+    python manage.py runserver 0.0.0.0:8000
+else
+    echo "🟢 PRODUCTION mode"
+
+    exec gunicorn wai_badminton_tracker.wsgi:application \
+        --bind 0.0.0.0:8000 \
+        --workers 2 \
+        --threads 2 \
+        --log-level info
+fi

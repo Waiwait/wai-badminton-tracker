@@ -1,7 +1,18 @@
-<h2>Session Dashboard</h2>
+<!-- session_dashboard.html -->
 
-<select name="player_id">
-  {% for player in players %}
-    <option value="{{ player.id }}">{{ player.name }}</option>
-  {% endfor %}
-</select>
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Live Court Board</h2>
+
+<div
+    class="board-container"
+    hx-get="{% url 'court-board' session.uuid %}"
+    hx-trigger="load, every 3s"
+    hx-swap="innerHTML"
+>
+    Loading courts...
+</div>
+
+{% endblock %}
