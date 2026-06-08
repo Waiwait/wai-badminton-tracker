@@ -9,7 +9,7 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = ("name", "gender", "MMR")
     list_filter = ("gender",)
     search_fields = ("name",)
-    ordering = ("-MMR",)
+    ordering = ("-strength",)
 
 
 @admin.register(Session)
