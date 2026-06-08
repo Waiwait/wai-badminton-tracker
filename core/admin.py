@@ -20,7 +20,7 @@ class SessionAdmin(admin.ModelAdmin):
 
     def session_link(self, obj):
         url = reverse("session_detail", kwargs={"uuid": obj.uuid})
-        return format_html("<a href="{}" target="_blank">Open Link</a>", url)
+        return format_html('<a href="{}" target="_blank">Open Link</a>', url)
 
     session_link.short_description = "Public Link"
 

@@ -27,7 +27,7 @@ if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(username=username, email=email, password=password)
     print(f"✅ Superuser created: {username} / {password}")
 else:
-    print(f"✅ Superuser "{username}" already exists")
+    print(f"✅ Superuser '{username}' already exists")
 EOF
 
 echo "✅ Starting Gunicorn..."

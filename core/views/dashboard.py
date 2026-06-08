@@ -9,7 +9,7 @@ def session_detail(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
 
     matches = session.matches.all()
-    players = PlayerSession.objects.filter(session=session)
+    players = Player.objects.filter(playersession__session=session)
 
     return render(request, "match/session_dashboard.html", {
         "session": session,
