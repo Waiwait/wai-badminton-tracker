@@ -1,13 +1,25 @@
 import uuid
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class Player(models.Model):
     name = models.CharField(max_length=100)
-    gender = models.CharField(max_length=10, choices=[("M", "Male"), ("F", "Female")], default="M")
-    MMR = models.IntegerField(default=1300)
+    gender = models.CharField(
+        max_length=10,
+        choices=[("M", "Male"), ("F", "Female")],
+        default="M"
+    )
+    strength = models.IntegerField(
+        default=50,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(100)
+        ]
+    )
 
     def __str__(self):
-        return f"{self.name} ({self.MMR})"
+        return f"{self.name} ({self.strength}"
 
 
 class Session(models.Model):
