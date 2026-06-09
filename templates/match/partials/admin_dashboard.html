@@ -1,0 +1,9 @@
+<div id="players-container">
+    Loading players...
+</div>
+
+<div
+    hx-get="{% url 'admin_players' uuid=session.uuid %}"
+    hx-target="#players-container"
+    hx-trigger="load, every 3s">
+</div>

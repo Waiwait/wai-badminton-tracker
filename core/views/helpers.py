@@ -1,9 +1,11 @@
 
-from ..models import Session,  Player
-from ..services.session_membership import add_player, remove_player
+from ..models import Session, Player
+from ..services.permissions import is_admin
+from ..services.session_membership import add_player, remove_player, render_players
 
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
+
 
 
 def court_board(request, uuid):
@@ -14,9 +16,20 @@ def court_board(request, uuid):
 
     for court in courts:
         match = court.matches.filter(finished=False).first()
+
+        if match:
+            participants = match.participants.select_related("player")
+
+            team1 = [p.player for p in participants if p.team == 1]
+            team2 = [p.player for p in participants if p.team == 2]
+        else:
+            team1 = []
+            team2 = []
+
         court_data.append({
             "court": court,
-            "match": match
+            "team1": team1,
+            "team2": team2,
         })
 
     return render(request, "match/partials/court_board.html", {
@@ -24,9 +37,6 @@ def court_board(request, uuid):
         "court_data": court_data,
     })
 
-
-def is_admin(user):
-    return user.is_staff
 
 
 @user_passes_test(is_admin)
@@ -36,7 +46,7 @@ def add_player_to_session(request, uuid):
 
     add_player(session, player)
 
-    return redirect("session_control", uuid=uuid)
+    return render(request, "match/partials/admin_players.html", render_players(session))
 
 
 @user_passes_test(is_admin)
@@ -46,6 +56,6 @@ def remove_player_from_session(request, uuid, player_id):
 
     remove_player(session, player)
 
-    return redirect("session_control", uuid=uuid)
+    return render(request, "match/partials/admin_players.html", render_players(session))
 
 

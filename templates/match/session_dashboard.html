@@ -1,5 +1,3 @@
-<!-- session_dashboard.html -->
-
 {% extends "base.html" %}
 
 {% block content %}
@@ -8,11 +6,19 @@
 
 <div
     class="board-container"
-    hx-get="{% url 'court-board' session.uuid %}"
+    hx-get="{% url 'court_board' uuid=session.uuid %}"
     hx-trigger="load, every 3s"
     hx-swap="innerHTML"
 >
     Loading courts...
 </div>
+
+{% if show_admin_panel %}
+
+  <div
+    hx-get="{% url 'admin_dashboard' uuid=session.uuid %}"
+    hx-trigger="load">
+  </div>
+{% endif %}
 
 {% endblock %}

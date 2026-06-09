@@ -1,50 +1,25 @@
 
-from ..models import Session, PlayerSession, Player
+from ..models import Session
+from ..services.permissions import is_admin
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 
+def is_admin(user):
+    return user.is_superuser
+
 
 def session_detail(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
-
-    matches = session.matches.all()
-    players = Player.objects.filter(playersession__session=session)
-
     return render(request, "match/session_dashboard.html", {
         "session": session,
-        "matches": matches,
-        "players": players,
+        "show_admin_panel": is_admin(request.user),
     })
 
 
-
-def is_admin(user):
-    return user.is_staff
-
 @user_passes_test(is_admin)
-def session_control_panel(request, uuid):
+def admin_dashboard(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
-
-    query = request.GET.get("q", "")
-
-    already_in_session = PlayerSession.objects.filter(
-        session=session
-    ).values_list("player_id", flat=True)
-
-    available_players = Player.objects.filter(
-        name__icontains=query
-    ).exclude(
-        id__in=already_in_session
-    )
-
-    session_players = Player.objects.filter(
-        id__in=already_in_session
-    )
-
-    return render(request, "match/session_control.html", {
+    return render(request, "match/partials/admin_dashboard.html", {
         "session": session,
-        "available_players": available_players,
-        "session_players": session_players,
-        "query": query
     })

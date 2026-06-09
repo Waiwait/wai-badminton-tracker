@@ -19,7 +19,7 @@ class Player(models.Model):
     )
 
     def __str__(self):
-        return f"{self.name} ({self.strength}"
+        return f"{self.name} ({self.strength})"
 
 
 class Session(models.Model):
@@ -68,6 +68,10 @@ class Match(models.Model):
     
 
 class MatchParticipant(models.Model):
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    match = models.ForeignKey(
+        Match,
+        on_delete=models.CASCADE,
+        related_name="participants"
+    )
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     team = models.IntegerField(choices=[(1, "Team 1"), (2, "Team 2")])
