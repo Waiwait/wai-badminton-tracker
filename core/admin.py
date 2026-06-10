@@ -6,10 +6,10 @@ from django.utils.html import format_html
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "gender", "strength")
+    list_display = ("name", "gender", "mu")
     list_filter = ("gender",)
     search_fields = ("name",)
-    ordering = ("-strength",)
+    ordering = ("-mu",)
 
 
 @admin.register(Session)
@@ -23,19 +23,6 @@ class SessionAdmin(admin.ModelAdmin):
         return format_html('<a href="{}" target="_blank">Open Link</a>', url)
 
     session_link.short_description = "Public Link"
-
-
-# @admin.register(Match)
-# class MatchAdmin(admin.ModelAdmin):
-#     list_display = ("id", "court", "finished", "winning_team", "score")
-#     list_filter = ("finished", "court")
-#     ordering = ("-id",)
-
-
-# @admin.register(MatchParticipant)
-# class MatchParticipantAdmin(admin.ModelAdmin):
-#     list_display = ("match", "player", "team")
-#     list_filter = ("team",)
 
 
 @admin.register(PlayerSession)

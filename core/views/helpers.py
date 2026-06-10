@@ -3,6 +3,7 @@ from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player, render_players
 from ..services.matches import render_matches
+from ..services.openskill import score_match
 
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
@@ -67,6 +68,8 @@ def finish_match(request, uuid, match_id):
 
     match.finished = True
     match.save()
+
+    score_match(match)
 
 
     messages.success(

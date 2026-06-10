@@ -10,16 +10,12 @@ class Player(models.Model):
         choices=[("M", "Male"), ("F", "Female")],
         default="M"
     )
-    strength = models.IntegerField(
-        default=50,
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(100)
-        ]
-    )
+
+    mu = models.DecimalField(max_digits=5, decimal_places=2,)
+    sigma = models.DecimalField(max_digits=5, decimal_places=2, default=8)
 
     def __str__(self):
-        return f"{self.name} ({self.strength})"
+        return f"{self.name} {self.mu}({self.sigma})"
 
 
 class Session(models.Model):
