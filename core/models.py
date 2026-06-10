@@ -57,21 +57,55 @@ class Court(models.Model):
         return f"Court {self.number}"
 
 class Match(models.Model):
-    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="matches")
-    court = models.ForeignKey(Court, null=True, blank=True, on_delete=models.SET_NULL, related_name="matches")
-    score = models.CharField(max_length=50, blank=True)
-    winning_team = models.IntegerField(null=True, blank=True, choices=[(1, "Team 1"), (2, "Team 2")])
+    court = models.ForeignKey(
+        Court, 
+        on_delete=models.CASCADE, 
+        related_name="matches"
+    )
     finished = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Match {self.id} on Court {self.court}"
-    
+        return f"Match {self.id} on Court {self.court.number if self.court else '?'}"
 
-class MatchParticipant(models.Model):
+    class Meta:
+        ordering = ['-id']
+
+
+class MatchTeam(models.Model):
     match = models.ForeignKey(
         Match,
+        on_delete=models.CASCADE,
+        related_name="teams"          # match.teams.all()
+    )
+    team_number = models.IntegerField(choices=[(1, "Team 1"), (2, "Team 2")])
+    is_winner = models.BooleanField(default=False)
+    score = models.IntegerField(
+        default=0,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(30)
+        ]
+    )
+
+    class Meta:
+        unique_together = ("match", "team_number")
+        ordering = ['team_number']
+
+    def __str__(self):
+        return f"Match {self.match_id} - Team {self.team_number} ({self.score})"
+
+
+class MatchParticipant(models.Model):
+    """Player belonging to a team in a match"""
+    match_team = models.ForeignKey(
+        MatchTeam,
         on_delete=models.CASCADE,
         related_name="participants"
     )
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    team = models.IntegerField(choices=[(1, "Team 1"), (2, "Team 2")])
+
+    class Meta:
+        unique_together = ("match_team", "player")
+
+    def __str__(self):
+        return f"{self.player} - {self.match_team}"

@@ -2,16 +2,36 @@
 
 {% block content %}
 
-<h2>Live Court Board</h2>
 
+<div id="session-dashboard">
+
+
+<h2>Live Court Board</h2>
 <div
     class="board-container"
     hx-get="{% url 'court_board' uuid=session.uuid %}"
-    hx-trigger="load, every 3s"
+    {% if show_admin_panel %}
+        hx-trigger="load, every 30s"
+    {% else %}
+        hx-trigger="load, every 5s"
+    {% endif %}
     hx-swap="innerHTML"
 >
     Loading courts...
 </div>
+
+<div
+    hx-get="{% url 'session_history' uuid=session.uuid %}"
+    {% if show_admin_panel %}
+        hx-trigger="load, every 30s"
+    {% else %}
+        hx-trigger="load, every 5s"
+    {% endif %}
+    hx-swap="innerHTML"
+>
+    Loading courts...
+</div>
+
 
 {% if show_admin_panel %}
 
@@ -20,5 +40,5 @@
     hx-trigger="load">
   </div>
 {% endif %}
-
+</div>
 {% endblock %}
