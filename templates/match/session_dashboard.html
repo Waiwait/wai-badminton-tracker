@@ -2,43 +2,45 @@
 
 {% block content %}
 
+<div id="session-dashboard" class="container mx-auto p-4">
+    <section>
+        <div
+            hx-get="{% url 'court_board' uuid=session.uuid %}"
+            {% if show_admin_panel %}
+                hx-trigger="load, every 30s"
+            {% else %}
+                hx-trigger="load, every 5s"
+            {% endif %}
+            hx-swap="innerHTML"
+        >
+            Loading courts...
+        </div>            
+    </section>
 
-<div id="session-dashboard">
+    <section>
+        {% if show_admin_panel %}
+        <div
+            hx-get="{% url 'admin_dashboard' uuid=session.uuid %}"
+            hx-trigger="load"
+            hx-swap="innerHTML"
+        >
+            Loading courts...
+        </div>
+        {% endif %}
+    </section>
 
-
-<h2>Live Court Board</h2>
-<div
-    class="board-container"
-    hx-get="{% url 'court_board' uuid=session.uuid %}"
-    {% if show_admin_panel %}
-        hx-trigger="load, every 30s"
-    {% else %}
-        hx-trigger="load, every 5s"
-    {% endif %}
-    hx-swap="innerHTML"
->
-    Loading courts...
-</div>
-
-<div
-    hx-get="{% url 'session_history' uuid=session.uuid %}"
-    {% if show_admin_panel %}
-        hx-trigger="load, every 30s"
-    {% else %}
-        hx-trigger="load, every 5s"
-    {% endif %}
-    hx-swap="innerHTML"
->
-    Loading courts...
-</div>
-
-
-{% if show_admin_panel %}
-
-  <div
-    hx-get="{% url 'admin_dashboard' uuid=session.uuid %}"
-    hx-trigger="load">
-  </div>
-{% endif %}
+    <section>
+        <div
+            hx-get="{% url 'session_history' uuid=session.uuid %}"
+            {% if show_admin_panel %}
+                hx-trigger="load, every 30s"
+            {% else %}
+                hx-trigger="load, every 5s"
+            {% endif %}
+            hx-swap="innerHTML"
+        >
+            Loading courts...
+        </div>            
+    </section>
 </div>
 {% endblock %}
