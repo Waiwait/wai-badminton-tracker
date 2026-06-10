@@ -40,4 +40,15 @@ urlpatterns = [
         helpers.finish_match,
         name="finish_match",
     ),
+
+    path(
+        "session/<uuid:uuid>/add-court/",
+        helpers.add_court,
+        name="add_court",
+    ),
+    path(
+        "session/<uuid:uuid>/release-court/<int:court_id>/",
+        helpers.release_court,
+        name="release_court",
+    ),
 ]

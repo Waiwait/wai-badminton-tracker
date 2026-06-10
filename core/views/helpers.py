@@ -7,7 +7,7 @@ from ..services.matches import render_matches
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
-
+from django.db import models
 
 
 @user_passes_test(is_admin)
@@ -139,7 +139,51 @@ def generate_match(request, uuid, court_id):
         f"New match started on Court {court.number}!"
     )
 
-    return render(request, "match//session_dashboard.html", {
+    return render(request, "match/session_dashboard.html", {
         "session": session,
         "show_admin_panel": is_admin(request.user),
     })
+
+
+@user_passes_test(is_admin)
+def add_court(request, uuid):
+    session = get_object_or_404(Session, uuid=uuid)
+
+    # 1. Try to find an inactive court
+    court = session.courts.filter(active=False).order_by("number").first()
+
+    if court:
+        court.active = True
+        court.save()
+    else:
+        # 2. Otherwise create next court number
+        last_number = session.courts.aggregate(models.Max("number"))["number__max"] or 0
+
+        court = Court.objects.create(
+            session=session,
+            number=last_number + 1,
+            active=True
+        )
+
+    return render(request, "match/partials/court_board.html", render_matches(request, session))
+
+@user_passes_test(is_admin)
+def release_court(request, uuid, court_id):
+    session = get_object_or_404(Session, uuid=uuid)
+    court = get_object_or_404(Court, id=court_id, session=session)
+
+    # check for unfinished match
+    has_active_match = court.matches.filter(finished=False).exists()
+
+    if has_active_match:
+        # don't allow deactivation
+        return render(request, "match/session_dashboard.html", {
+            "session": session,
+            "error": "Cannot deactivate court: active match in progress",
+            "show_admin_panel": is_admin(request.user),
+        })
+
+    court.active = False
+    court.save()
+
+    return render(request, "match/partials/court_board.html", render_matches(request, session))
