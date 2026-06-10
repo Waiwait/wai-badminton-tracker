@@ -7,7 +7,13 @@ urlpatterns = [
     path("session/<uuid:uuid>/", dashboard.session_detail, name="session_detail"),
 
     # board
-    path("session/<uuid:uuid>/board/", helpers.court_board, name="court_board"),
+    path("session/<uuid:uuid>/board/", dashboard.court_board, name="court_board"),
+
+    path(
+        "session/<uuid:uuid>/session-history",
+        dashboard.session_history,
+        name="session_history",
+    ),
 
     # admin
     path("session/<uuid:uuid>/admin/dashboard/", dashboard.admin_dashboard, name="admin_dashboard"),
@@ -22,5 +28,16 @@ urlpatterns = [
         "session/<uuid:uuid>/remove-player-from-session/<int:player_id>/",
         helpers.remove_player_from_session,
         name="remove_player_from_session",
+    ),
+
+    path(
+        "session/<uuid:uuid>/generate-match/<int:court_id>/",
+        helpers.generate_match,
+        name="generate_match",
+    ),
+    path(
+        "session/<uuid:uuid>/finish-match/<int:match_id>/",
+        helpers.finish_match,
+        name="finish_match",
     ),
 ]

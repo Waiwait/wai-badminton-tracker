@@ -1,0 +1,9 @@
+<h3>History</h3>
+
+{% for item in history %}
+    <div>
+        [Court {{ item.court }}] {{ item.line }}
+    </div>
+{% empty %}
+    <p>No matches yet.</p>
+{% endfor %}

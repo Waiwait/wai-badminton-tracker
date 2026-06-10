@@ -1,41 +1,12 @@
 
-from ..models import Session, Player
+from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player, render_players
+from ..services.matches import render_matches
 
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
-
-
-
-def court_board(request, uuid):
-    session = get_object_or_404(Session, uuid=uuid)
-    courts = session.courts.all().order_by("number")
-
-    court_data = []
-
-    for court in courts:
-        match = court.matches.filter(finished=False).first()
-
-        if match:
-            participants = match.participants.select_related("player")
-
-            team1 = [p.player for p in participants if p.team == 1]
-            team2 = [p.player for p in participants if p.team == 2]
-        else:
-            team1 = []
-            team2 = []
-
-        court_data.append({
-            "court": court,
-            "team1": team1,
-            "team2": team2,
-        })
-
-    return render(request, "match/partials/court_board.html", {
-        "session": session,
-        "court_data": court_data,
-    })
+from django.contrib import messages
 
 
 
@@ -59,3 +30,116 @@ def remove_player_from_session(request, uuid, player_id):
     return render(request, "match/partials/admin_players.html", render_players(session))
 
 
+@user_passes_test(is_admin)
+def finish_match(request, uuid, match_id):
+    session = get_object_or_404(Session, uuid=uuid)
+    
+    match = get_object_or_404(
+        Match, 
+        id=match_id, 
+        court__session=session
+    )
+
+    team1_score = int(request.POST.get('team1_score', 0))
+    team2_score = int(request.POST.get('team2_score', 0))
+
+    # Get both teams
+    team1 = match.teams.get(team_number=1)
+    team2 = match.teams.get(team_number=2)
+
+    # Update scores
+    team1.score = team1_score
+    team2.score = team2_score
+
+    # Determine winner
+    if team1_score > team2_score:
+        team1.is_winner = True
+        team2.is_winner = False
+    elif team2_score > team1_score:
+        team1.is_winner = False
+        team2.is_winner = True
+    else:
+        team1.is_winner = False
+        team2.is_winner = False
+
+    team1.save()
+    team2.save()
+
+    match.finished = True
+    match.save()
+
+
+    messages.success(
+        request, 
+        f"Match on Court {match.court.number} finished! Score: {team1_score} - {team2_score}"
+    )
+    
+    return render(request, "match/session_dashboard.html", {
+        "session": session,
+        "show_admin_panel": is_admin(request.user),
+    })
+
+
+@user_passes_test(is_admin)
+def generate_match(request, uuid, court_id):
+    session = get_object_or_404(Session, uuid=uuid)
+    
+    court = get_object_or_404(
+        Court, 
+        id=court_id, 
+        session=session
+    )
+
+    existing_match = court.matches.filter(finished=False).first()
+    
+    if existing_match:
+        existing_match.finished = True
+        existing_match.save()
+        messages.warning(
+            request, 
+            f"Previous match on Court {court.number} was closed."
+        )
+
+    # All players registered in this session
+    session_players = Player.objects.filter(
+        playersession__session=session
+    ).distinct()
+
+    # Players currently in a match in this session
+    in_match_players = Player.objects.filter(
+        matchparticipant__match_team__match__court__session=session,
+        matchparticipant__match_team__match__finished=False
+    ).distinct()
+
+    players_waiting = session_players.exclude(id__in=in_match_players)
+
+    # Need at least 4 players
+    if len(players_waiting) < 4:
+        messages.error(request, "Not enough players waiting (need at least 4)")
+        return render(request, "match/partials/court_board.html", render_matches(request, session))
+    
+    # Take first 4 players (you can improve this logic later)
+    selected_players = players_waiting[:4]
+
+    # Create new Match
+    match = Match.objects.create(court=court)
+
+    # Create two teams
+    team1 = MatchTeam.objects.create(match=match, team_number=1)
+    team2 = MatchTeam.objects.create(match=match, team_number=2)
+
+    # Assign 2 players to each team
+    MatchParticipant.objects.create(match_team=team1, player=selected_players[0])
+    MatchParticipant.objects.create(match_team=team1, player=selected_players[1])
+    MatchParticipant.objects.create(match_team=team2, player=selected_players[2])
+    MatchParticipant.objects.create(match_team=team2, player=selected_players[3])
+
+    messages.success(
+        request, 
+        f"New match started on Court {court.number}!"
+    )
+
+    return render(request, "match//session_dashboard.html", {
+        "session": session,
+        "show_admin_panel": is_admin(request.user),
+    })

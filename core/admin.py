@@ -25,18 +25,17 @@ class SessionAdmin(admin.ModelAdmin):
     session_link.short_description = "Public Link"
 
 
-@admin.register(Match)
-class MatchAdmin(admin.ModelAdmin):
-    
-    list_display = ("id", "session", "court", "finished", "winning_team", "score")
-    list_filter = ("finished", "session")
-    ordering = ("-id",)
+# @admin.register(Match)
+# class MatchAdmin(admin.ModelAdmin):
+#     list_display = ("id", "court", "finished", "winning_team", "score")
+#     list_filter = ("finished", "court")
+#     ordering = ("-id",)
 
 
-@admin.register(MatchParticipant)
-class MatchParticipantAdmin(admin.ModelAdmin):
-    list_display = ("match", "player", "team")
-    list_filter = ("team",)
+# @admin.register(MatchParticipant)
+# class MatchParticipantAdmin(admin.ModelAdmin):
+#     list_display = ("match", "player", "team")
+#     list_filter = ("team",)
 
 
 @admin.register(PlayerSession)
