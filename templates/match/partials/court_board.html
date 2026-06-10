@@ -40,18 +40,39 @@
       {% endif %}
 
     {% else %}
-      <!-- No match - Generate button -->
-      {% if show_admin_panel %}
-      <form method="post" 
-            hx-post="{% url 'generate_match' uuid=session.uuid court_id=item.court.id %}"
-            hx-target="#session-dashboard"
-            hx-swap="outerHTML">
-        <button type="submit">Generate Match</button>
-      </form>
+      <!-- No match - Generate Match/Relase Court button -->
+      {% if show_admin_panel and item.active %}
+        <form method="post" 
+              hx-post="{% url 'generate_match' uuid=session.uuid court_id=item.court.id %}"
+              hx-target="#session-dashboard"
+              hx-swap="outerHTML">
+          <button type="submit">Generate Match</button>
+        </form>
+
+        <form method="post" 
+              hx-post="{% url 'release_court' uuid=session.uuid court_id=item.court.id %}"
+              hx-target="#court-board"
+              hx-swap="innerHTML">
+          <button type="submit">Release Court</button>
+        </form>
+
+      {% elif not item.active %}
+        <div>Court Paused</div>
+
       {% else %}
         <div>Available</div>
       {% endif %}
     {% endif %}
   </div>
 {% endfor %}
+
+<div>
+  <form method="post" 
+      hx-post="{% url 'add_court' uuid=session.uuid %}"
+      hx-target="#court-board"
+      hx-swap="innerHTML">
+    <button type="submit">Add Court</button>
+  </form>
+</div>
+
 </div>

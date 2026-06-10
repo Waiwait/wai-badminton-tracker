@@ -21,6 +21,7 @@ def render_matches(request, session):
 
         court_data.append({
             "court": court,
+            "active": court.active,
             "match": match if match else None,
             "team1": team1,
             "team2": team2,
