@@ -1,6 +1,7 @@
-# Badminton Matchmaking Web App
+# Wai-Badminton-Tracker
 
-This is a web application designed to handle badminton matchmaking.  
+This is a lightweight web application designed to manage badminton sessions. Admin create sessions/users via the admin panel and then manage specific sessions via a central dashboard.
+
 It is built using **HTML**, **Django**, and **HTMX**.
 
 ---
@@ -62,5 +63,10 @@ Container startup will also automatically apply any existing migrations via the 
 - From the admin panel -> create a session, access via link
 - Load data (from superbadders) via `http://localhost:8000/import-players/`
 
+
+## Deploying
+
+- Currently this is running on render (web-app) and aiven (postgres), the free tier being sufficient
+- To deploy a version of this, I recommend to clone a copy of this repo and point render to your cloned project
 
 

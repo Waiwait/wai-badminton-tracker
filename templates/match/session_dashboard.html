@@ -17,19 +17,7 @@
         </div>            
     </section>
 
-    <section>
-        {% if show_admin_panel %}
-        <div
-            hx-get="{% url 'admin_dashboard' uuid=session.uuid %}"
-            hx-trigger="load"
-            hx-swap="innerHTML"
-        >
-            Loading courts...
-        </div>
-        {% endif %}
-    </section>
-
-    <section>
+     <section>
         <div
             hx-get="{% url 'session_history' uuid=session.uuid %}"
             {% if show_admin_panel %}
@@ -39,8 +27,21 @@
             {% endif %}
             hx-swap="innerHTML"
         >
-            Loading courts...
+            Loading history...
         </div>            
     </section>
+
+    <section>
+        {% if show_admin_panel %}
+        <div
+            hx-get="{% url 'admin_dashboard' uuid=session.uuid %}"
+            hx-trigger="load"
+            hx-swap="innerHTML"
+        >
+            Loading admin panel...
+        </div>
+        {% endif %}
+    </section>
+
 </div>
 {% endblock %}

@@ -7,7 +7,7 @@
     {% csrf_token %}
     <p><strong>Paste the full restore string below:</strong></p>
     <textarea name="restore_string" rows="15" cols="120" 
-              style="width:100%; font-family:monospace; font-size:13px;">{{ request.POST.restore_string|default:'' }}</textarea>
+              style="width:100%; font-family:monospace; font-size:13px; color: black;">{{ request.POST.restore_string|default:'' }}</textarea>
     <br><br>
     <button type="submit" style="padding:12px 24px; font-size:16px;">Import Players</button>
 </form>

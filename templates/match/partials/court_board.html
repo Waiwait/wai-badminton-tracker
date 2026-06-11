@@ -76,12 +76,15 @@
         </div>
         {% endfor %}
     </div>
-
-    <form method="post" 
-        hx-post="{% url 'add_court' uuid=session.uuid %}"
-        hx-target="#court-board"
-        hx-swap="innerHTML">
-        <button type="submit" class="primary-button mt-4">Add Court</button>
-    </form>
+    {% if show_admin_panel %}
+      <div class="text-center">
+        <form method="post" 
+            hx-post="{% url 'add_court' uuid=session.uuid %}"
+            hx-target="#court-board"
+            hx-swap="innerHTML">
+            <button type="submit" class="primary-button mt-4">Add Court</button>
+        </form>
+      </div>
+    {% endif %}
 </div>
 

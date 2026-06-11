@@ -15,7 +15,7 @@ class Player(models.Model):
     sigma = models.DecimalField(max_digits=5, decimal_places=2, default=3)
 
     def __str__(self):
-        return f"{self.name} {self.mu}({self.sigma})"
+        return f"{self.name}"
 
 
 class Session(models.Model):

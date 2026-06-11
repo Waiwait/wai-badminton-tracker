@@ -1,9 +1,11 @@
-<h2 class="text-2xl font-bold mb-4">History</h2>
+<div class="text-center">
+    <h2 class="text-2xl font-bold mb-4">History</h2>
 
-{% for item in history %}
-    <div>
-        [Court {{ item.court }}] {{ item.line }}
-    </div>
-{% empty %}
-    <p>No matches yet.</p>
-{% endfor %}
+    {% for item in history %}
+        <div class="mb-2">
+            [Court {{ item.court }}] {{ item.line }}
+        </div>
+    {% empty %}
+        <p class="text-gray-500">No matches yet.</p>
+    {% endfor %}
+</div>
