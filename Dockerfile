@@ -22,5 +22,6 @@ COPY . .
 RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 8000
+EXPOSE 10000
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

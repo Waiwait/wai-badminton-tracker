@@ -39,7 +39,7 @@ else
     echo "🟢 PRODUCTION mode"
 
     exec gunicorn wai_badminton_tracker.wsgi:application \
-        --bind 0.0.0.0:8000 \
+        --bind 0.0.0.0:$PORT \
         --workers 2 \
         --threads 2 \
         --log-level info
