@@ -6,7 +6,12 @@
 
     {% load static %}
 
-    <link rel="stylesheet" href="{% static 'match/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'images/favicon/site.webmanifest' %}">
 
     <!-- HTMX (required for hx-get, hx-trigger, etc.) -->
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -19,6 +24,8 @@
     {% block content %}
     {% endblock %}
 
+    <!-- Tailwind via CDN Play -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         document.body.addEventListener('htmx:configRequest', function (event) {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';

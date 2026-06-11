@@ -119,8 +119,11 @@ def generate_match(request, uuid, court_id):
     # Need at least 4 players
     if len(players_waiting) < 4:
         messages.error(request, "Not enough players waiting (need at least 4)")
-        return render(request, "match/partials/court_board.html", render_matches(request, session))
-    
+        return render(request, "match/session_dashboard.html", {
+        "session": session,
+        "show_admin_panel": is_admin(request.user),
+    })
+
     # Take first 4 players (you can improve this logic later)
     selected_players = players_waiting[:4]
 
@@ -162,11 +165,14 @@ def add_court(request, uuid):
         # 2. Otherwise create next court number
         last_number = session.courts.aggregate(models.Max("number"))["number__max"] or 0
 
-        court = Court.objects.create(
-            session=session,
-            number=last_number + 1,
-            active=True
-        )
+        if last_number <= 3:
+            court = Court.objects.create(
+                session=session,
+                number=last_number + 1,
+                active=True
+            )
+        else:
+            messages.error(request, "Maximum of 4 courts allowed")
 
     return render(request, "match/partials/court_board.html", render_matches(request, session))
 

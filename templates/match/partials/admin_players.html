@@ -1,8 +1,8 @@
 <div id="players-panel">
-    <h2>Admin Players</h2>
+    <h2 class="text-2xl font-bold mb-4">Admin Players</h2>
 
-    <h3>In Session</h3>
-    <ul>
+    <h3 class="font-bold">In Session</h3>
+    <ul class="mb-4">
         {% for player in players_waiting %}
             <li>
                 {{ player.name }}
@@ -10,7 +10,8 @@
                 <button
                     hx-post="{% url 'remove_player_from_session' uuid=session.uuid player_id=player.id %}"
                     hx-target="#players-panel"
-                    hx-swap="innerHTML">
+                    hx-swap="innerHTML"
+                    class="link-button-danger ml-2">
                     Remove
                 </button>
             </li>
@@ -19,7 +20,7 @@
         {% endfor %}
     </ul>
 
-    <h3>Players Not In Session</h3>
+    <h3 class="font-bold">Players Not In Session</h3>
     <ul>
         {% for player in players_not_in_session %}
             <li>
@@ -29,7 +30,8 @@
                     hx-post="{% url 'add_player_to_session' uuid=session.uuid %}"
                     hx-vals='{"player_id": "{{ player.id }}"}'
                     hx-target="#players-panel"
-                    hx-swap="innerHTML">
+                    hx-swap="innerHTML"
+                    class="link-button-green ml-2">
                     Add
                 </button>
             </li>

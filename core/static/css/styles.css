@@ -1,3 +1,15 @@
+@import 'variables.css';
+
+body {
+    background-color: var(--dark-green);
+    color: var(--text-colour);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+section {
+    padding: 20px 0;
+}
+
 /* Header */
 .court-header {
     font-size: 13px;
@@ -56,4 +68,33 @@
     font-size: 36px;
     opacity: 0.2;
     padding: 20px;
+}
+
+.match-box {
+    background: var(--dark-teal);
+    border-color: var(--dark-teal);
+}
+
+.primary-button {
+    background: var(--slate-blue);
+    border: 1px solid var(--slate-blue);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-weight: bold;
+}
+
+.primary-button:hover {
+    background: var(--slate-blue);
+    border-color: var(--slate-blue);
+    opacity: 0.8;
+}
+
+.link-button-danger {
+    color: var(--crimson);
+    text-decoration: underline;
+}
+
+.link-button-green {
+    color: var(--jade-green);
+    text-decoration: underline;
 }
