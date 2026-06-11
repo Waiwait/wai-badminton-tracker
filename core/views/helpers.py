@@ -123,7 +123,10 @@ def generate_match(request, uuid, court_id):
     # Need at least 4 players
     if len(players_waiting) < 4:
         messages.error(request, "Not enough players waiting (need at least 4)")
-        return render(request, "match/partials/court_board.html", render_matches(request, session))
+        return render(request, "match/session_dashboard.html", {
+        "session": session,
+        "show_admin_panel": is_admin(request.user),
+    })
     
     matches_ranked = matchmaking(players_waiting=players_waiting, session=session)
 

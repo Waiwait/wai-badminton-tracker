@@ -15,8 +15,6 @@ def eval_pair_games_played(players):
     Expects: players = [player1_dict, player2_dict]
     Returns: bool (keep)
     """
-    if len(players) != 2:
-        return False
 
     p1, p2 = players
     p1_id, p2_id = p1["id"], p2["id"]
@@ -57,7 +55,6 @@ def eval_match_played_against(teams):
     active_players = 0
 
     for p in all_players:
-        p_id = p["id"]
         played_against = p.get("played_against", {})
         total_games = (sum(p.get("played_with", {}).values()) +
                        sum(played_against.values()))
@@ -81,7 +78,7 @@ def eval_match_played_against(teams):
             active_players += 1
 
     if active_players == 0:
-        return False, 1.0
+        return True, 1.0
 
     avg_ratio = total_ratio / active_players
     unfairness = min(1.0, avg_ratio / 0.3)
@@ -141,8 +138,6 @@ def eval_match_played_with(teams):
 
 def eval_match_fairness(teams):
     """Evaluates skill fairness. Expects teams = (team1, team2)"""
-    if not teams or len(teams) != 2:
-        return False, 1.0
 
     raw_diff = evaluate_win_differential(teams)
 
@@ -150,7 +145,7 @@ def eval_match_fairness(teams):
     fairness_score = 1 - 2 * unfairness
     fairness_score = max(min(fairness_score, 1.0), -1.0)
 
-    is_fair = fairness_score >= 0.45
+    is_fair = raw_diff >= 0.25
     return is_fair, fairness_score
 
 
@@ -230,9 +225,6 @@ def generate_config(players_waiting, session):
 
 def contains_blacklisted_pair(team, blacklisted_pairs):
     """Check if any two players in the team are blacklisted (using IDs)."""
-    if len(team) < 2:
-        return False
-    
     for p1, p2 in combinations(team, 2):
         pair = frozenset([p1["id"], p2["id"]])
         if pair in blacklisted_pairs:
