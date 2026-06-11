@@ -1,9 +1,10 @@
 
 from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant
 from ..services.permissions import is_admin
-from ..services.session_membership import add_player, remove_player, render_players
-from ..services.matches import render_matches
+from ..services.session_membership import add_player, remove_player
+from ..services.renders import render_matches, render_players
 from ..services.openskill import score_match
+from ..services.matchmaking import matchmaking
 
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
@@ -69,7 +70,10 @@ def finish_match(request, uuid, match_id):
     match.finished = True
     match.save()
 
-    score_match(match)
+    try:
+        score_match(match)
+    except Exception as e:
+        print(e)
 
 
     messages.success(
@@ -123,10 +127,19 @@ def generate_match(request, uuid, court_id):
         "session": session,
         "show_admin_panel": is_admin(request.user),
     })
+    
+    matches_ranked = matchmaking(players_waiting=players_waiting, session=session)
 
-    # Take first 4 players (you can improve this logic later)
-    selected_players = players_waiting[:4]
+    for matches in matches_ranked[:5]:
+        str_print = "[INFO] "
+        for teams in matches["teams"]:
+            for player in teams:
+               str_print += f"{player['name']},"
+        str_print += f": {matches["score"]}"
+        print(str_print)
+    match_chosen = matches_ranked[0]
 
+    
     # Create new Match
     match = Match.objects.create(court=court)
 
@@ -134,11 +147,18 @@ def generate_match(request, uuid, court_id):
     team1 = MatchTeam.objects.create(match=match, team_number=1)
     team2 = MatchTeam.objects.create(match=match, team_number=2)
 
+    def create_player(player_id, team):
+        player = Player.objects.get(id=player_id)
+        MatchParticipant.objects.create(
+            match_team=team,
+            player=player
+        )
     # Assign 2 players to each team
-    MatchParticipant.objects.create(match_team=team1, player=selected_players[0])
-    MatchParticipant.objects.create(match_team=team1, player=selected_players[1])
-    MatchParticipant.objects.create(match_team=team2, player=selected_players[2])
-    MatchParticipant.objects.create(match_team=team2, player=selected_players[3])
+    create_player(match_chosen["teams"][0][0]["id"], team1)
+    create_player(match_chosen["teams"][0][1]["id"], team1)
+    create_player(match_chosen["teams"][1][0]["id"], team2)
+    create_player(match_chosen["teams"][1][1]["id"], team2)
+
 
     messages.success(
         request, 

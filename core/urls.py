@@ -1,4 +1,4 @@
-from .views import dashboard, helpers, admin
+from .views import dashboard, helpers, admin, import_players
 
 from django.urls import path
 
@@ -51,4 +51,6 @@ urlpatterns = [
         helpers.release_court,
         name="release_court",
     ),
+
+    path('import-players/', import_players.load_players_page, name='import-players'),
 ]

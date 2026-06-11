@@ -4,6 +4,9 @@ from itertools import combinations
 from openskill.models import PlackettLuce
 
 
+def set_model():
+    global model
+    model = PlackettLuce()
 
 
 def _match_weight(score_a, score_b):
@@ -16,7 +19,7 @@ def _match_weight(score_a, score_b):
         return 3
 
 
-def _play_match_with_weights(model, team_a, team_b, score_a, score_b):
+def _play_match_with_weights(team_a, team_b, score_a, score_b):
     for _ in range(_match_weight(score_a, score_b)):
         # scoring doesn't matter here it's used for evaluating winner
         # which is why we need weighting
@@ -25,24 +28,25 @@ def _play_match_with_weights(model, team_a, team_b, score_a, score_b):
     return team_a, team_b
 
 
-def get_games_by_fairness(model, players):
-    teams = list(combinations(players, 2))
-    potential_matches = []
+def evaluate_win_differential(teams):
 
-    for team1, team2 in combinations(teams, 2):
-        predictions = model.predict_win([team1, team2])
-        fairness = abs(predictions[0] - predictions[1])
+    team_a = [
+        model.rating(mu=float(p["mu"]), sigma=float(p["sigma"]))
+        for p in teams[0]
+    ]
 
-        potential_matches.append({
-            "teams": [team1, team2],
-            "score": fairness
-        })
+    team_b = [
+        model.rating(mu=float(p["mu"]), sigma=float(p["sigma"]))
+        for p in teams[1]
+    ]
+    predictions = model.predict_win([team_a, team_b])
+    fairness = abs(predictions[0] - predictions[1])
 
-    return potential_matches
+    return fairness
 
 
 def score_match(match):
-    model = PlackettLuce()
+    set_model()
 
     team1 = match.teams.get(team_number=1)
     team2 = match.teams.get(team_number=2)
@@ -66,7 +70,6 @@ def score_match(match):
 
     # Run rating update
     team_a_updated, team_b_updated = _play_match_with_weights(
-        model,
         team_a,
         team_b,
         score1,
