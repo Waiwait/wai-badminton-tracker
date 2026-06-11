@@ -11,3 +11,4 @@ channels==4.1.0
 channels-redis==4.2.0
 asgiref==3.8.1
 openskill==6.2.0
+dj-database-url>=2.0.0

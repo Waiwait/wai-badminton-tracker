@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,8 +50,18 @@ TEMPLATES = [
     },
 ]
 
+# Database
 DATABASES = {
-    "default": {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,      # Keep connections alive longer
+        ssl_require=True       # Aiven requires SSL
+    )
+}
+
+# Fallback for local development if needed
+if not os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB", "badmintonhub"),
         "USER": os.getenv("POSTGRES_USER", "postgres"),
@@ -58,7 +69,6 @@ DATABASES = {
         "HOST": os.getenv("POSTGRES_HOST", "db"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
-}
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
