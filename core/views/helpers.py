@@ -182,11 +182,14 @@ def add_court(request, uuid):
         # 2. Otherwise create next court number
         last_number = session.courts.aggregate(models.Max("number"))["number__max"] or 0
 
-        court = Court.objects.create(
-            session=session,
-            number=last_number + 1,
-            active=True
-        )
+        if last_number <= 3:
+            court = Court.objects.create(
+                session=session,
+                number=last_number + 1,
+                active=True
+            )
+        else:
+            messages.error(request, "Maximum of 4 courts allowed")
 
     return render(request, "match/partials/court_board.html", render_matches(request, session))
 

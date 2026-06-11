@@ -1,78 +1,87 @@
-<div id="court-board" class="court-grid">
-{% for item in court_data %}
-  <div>
-    <strong>Court {{ item.court.number }}</strong>
+<div id="court-board">
+    <h2 class="text-center text-2xl font-bold mb-4">Live Court Board</h2>
 
-    {% if item.match %}
-      <!-- Active Match - Show scoring form -->
-      <div>
-        {{ item.team1|join:", " }} | {{ item.team2|join:", " }}
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for item in court_data %}
+        <div class="flex flex-col items-center border rounded-lg p-4 match-box text-center">
+            <strong class="mb-2">Court {{ item.court.number }}</strong>
 
-      {% if show_admin_panel %}
-      <form method="post" 
-            hx-post="{% url 'finish_match' uuid=session.uuid match_id=item.match.id %}"
-            hx-target="#session-dashboard"
-            hx-swap="outerHTML">
+            {% if item.match %}
+            <!-- Active Match - Show scoring form -->
+            <div class="grid grid-cols-2 gap-4 w-full mb-2">
+                <div class="grid grid-cols-1">
+                    <span>{{ item.team1.0 }}</span>
+                    <span>{{ item.team1.1}}</span>
+                </div>
 
-        <div style="margin: 10px 0;">
-          <strong>Team 1:</strong>
-          <input type="number" 
-                 name="team1_score" 
-                 min="0" 
-                 max="30" 
-                 value="{{ item.team1_score|default:0 }}"
-                 required>
+                <div class="grid grid-cols-1">
+                    <span>{{ item.team2.0 }}</span>
+                    <span>{{ item.team2.1}}</span>
+                </div>
+            </div>
+
+            {% if show_admin_panel %}
+            <form method="post" 
+                hx-post="{% url 'finish_match' uuid=session.uuid match_id=item.match.id %}"
+                hx-target="#session-dashboard"
+                hx-swap="outerHTML"
+                class="w-full">
+
+                <div class="flex justify-around">
+                    <input type="number" 
+                        name="team1_score" 
+                        min="0" 
+                        max="30" 
+                        value="{{ item.team1_score|default:0 }}"
+                        class="w-20 dark-text p-1 border rounded-sm"
+                        placeholder="21"
+                        required>
+
+                    <input type="number" 
+                        name="team2_score" 
+                        min="0" 
+                        max="30" 
+                        value="{{ item.team2_score|default:0 }}"
+                        class="w-20 dark-text p-1 border rounded-sm"
+                        placeholder="21"
+                        required>                
+                </div>
+
+                <button type="submit" class="primary-button mt-4">Finish Match</button>
+            </form>
+            {% endif %}
+
+            {% else %}
+                <!-- No match - Generate Match/Relase Court button -->
+                {% if show_admin_panel and item.active %}
+                    <form method="post" 
+                        hx-post="{% url 'generate_match' uuid=session.uuid court_id=item.court.id %}"
+                        hx-target="#session-dashboard"
+                        hx-swap="outerHTML">
+
+                        <button type="submit" class="primary-button mt-4">Generate Match</button>
+                    </form>
+
+                    <form method="post" 
+                        hx-post="{% url 'release_court' uuid=session.uuid court_id=item.court.id %}"
+                        hx-target="#court-board"
+                        hx-swap="innerHTML">
+                    <button type="submit" class="primary-button mt-4">Release Court</button>
+                    </form>
+
+                {% elif not item.active %}
+                    <div>Court Paused</div>
+                {% endif %}
+            {% endif %}
         </div>
+        {% endfor %}
+    </div>
 
-        <div style="margin: 10px 0;">
-          <strong>Team 2:</strong>
-          <input type="number" 
-                 name="team2_score" 
-                 min="0" 
-                 max="30" 
-                 value="{{ item.team2_score|default:0 }}"
-                 required>
-        </div>
-
-        <button type="submit">Finish Match</button>
-      </form>
-      {% endif %}
-
-    {% else %}
-      <!-- No match - Generate Match/Relase Court button -->
-      {% if show_admin_panel and item.active %}
-        <form method="post" 
-              hx-post="{% url 'generate_match' uuid=session.uuid court_id=item.court.id %}"
-              hx-target="#session-dashboard"
-              hx-swap="outerHTML">
-          <button type="submit">Generate Match</button>
-        </form>
-
-        <form method="post" 
-              hx-post="{% url 'release_court' uuid=session.uuid court_id=item.court.id %}"
-              hx-target="#court-board"
-              hx-swap="innerHTML">
-          <button type="submit">Release Court</button>
-        </form>
-
-      {% elif not item.active %}
-        <div>Court Paused</div>
-
-      {% else %}
-        <div>Available</div>
-      {% endif %}
-    {% endif %}
-  </div>
-{% endfor %}
-
-<div>
-  <form method="post" 
-      hx-post="{% url 'add_court' uuid=session.uuid %}"
-      hx-target="#court-board"
-      hx-swap="innerHTML">
-    <button type="submit">Add Court</button>
-  </form>
+    <form method="post" 
+        hx-post="{% url 'add_court' uuid=session.uuid %}"
+        hx-target="#court-board"
+        hx-swap="innerHTML">
+        <button type="submit" class="primary-button mt-4">Add Court</button>
+    </form>
 </div>
 
-</div>
