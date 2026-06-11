@@ -1,6 +1,6 @@
 from ..services.permissions import is_admin
 from ..models import Session
-from ..services.session_membership import render_players
+from ..services.renders import render_players
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test

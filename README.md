@@ -49,11 +49,18 @@ In the future, this should be handled via a Git hook.
 
 ## Create migrations
 
-If making changes to any models, make migrations via
+If making changes to any models, make/run migrations via
 `docker exec -it wai-badminton-tracker-web-1 python manage.py makemigrations core`
-Container startup will automatically apply any existing migrations via the `docker-entrypoint`, so restart the container to apply the newly created migrations.
+`docker exec -it wai-badminton-tracker-web-1 python manage.py migrate`
+Container startup will also automatically apply any existing migrations via the `docker-entrypoint`.
 
+--
 
+## Getting up and running
+
+- Login to the admin panel via `http://localhost:8000/`
+- From the admin panel -> create a session, access via link
+- Load data (from superbadders) via `http://localhost:8000/import-players/`
 
 
 

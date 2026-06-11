@@ -1,7 +1,7 @@
 
 from ..models import Session, Match
 from ..services.permissions import is_admin
-from ..services.matches import render_matches
+from ..services.renders import render_matches
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
