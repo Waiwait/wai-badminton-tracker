@@ -27,10 +27,11 @@ urlpatterns = [
         helpers.add_player_to_session,
         name="add_player_to_session",
     ),
+
     path(
-        "session/<uuid:uuid>/remove-player-from-session/<int:player_id>/",
-        helpers.remove_player_from_session,
-        name="remove_player_from_session",
+        "session/<uuid:uuid>/pause-player-in-pause/<int:player_id>/",
+        helpers.pause_player_in_session,
+        name="pause_player_in_session",
     ),
 
     path(
