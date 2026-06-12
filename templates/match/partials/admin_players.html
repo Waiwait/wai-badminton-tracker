@@ -1,40 +1,35 @@
-<div id="players-panel">
-    <h2 class="font-bold mb-4">Players:</h2>
 
-    <h3 class="font-bold">In Session</h3>
-    <ul class="mb-4">
-        {% for player in players_waiting %}
-            <li>
-                {{ player.name }} [{{ player.games_played }}]
+<h2 class="font-bold mb-4">Players:</h2>
 
-                <button
-                    hx-post="{% url 'remove_player_from_session' uuid=session.uuid player_id=player.id %}"
-                    hx-target="#players-panel"
-                    hx-swap="innerHTML"
-                    class="link-button-danger ml-2">
-                    Remove
-                </button>
-            </li>
-        {% empty %}
-            <li>N/A</li>
-        {% endfor %}
-    </ul>
+<h3 class="font-bold">In Session</h3>
+<ul class="mb-4">
+    {% for player in players_waiting %}
+        <li>
+            {{ player.name }} [{{ player.games_played }}]
+            <button
+                hx-post="{% url 'remove_player_from_session' uuid=session.uuid player_id=player.id %}"
+                class="link-button-danger ml-2">
+                Remove
+            </button>
+        </li>
+    {% empty %}
+        <li>N/A</li>
+    {% endfor %}
+</ul>
 
-    <h3 class="font-bold">Not In Session</h3>
-    <ul>
-        {% for player in players_not_in_session %}
-            <li>
-                {{ player.name }}
+<h3 class="font-bold">Not In Session</h3>
+<ul>
+    {% for player in players_not_in_session %}
+        <li>
+            {{ player.name }}
 
-                <button
-                    hx-post="{% url 'add_player_to_session' uuid=session.uuid %}"
-                    hx-vals='{"player_id": "{{ player.id }}"}'
-                    hx-target="#players-panel"
-                    hx-swap="innerHTML"
-                    class="link-button-green ml-2">
-                    Add
-                </button>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+            <button
+                hx-post="{% url 'add_player_to_session' uuid=session.uuid %}"
+                hx-vals='{"player_id": "{{ player.id }}"}'
+                class="link-button-green ml-2">
+                Add
+            </button>
+        </li>
+    {% endfor %}
+</ul>
+

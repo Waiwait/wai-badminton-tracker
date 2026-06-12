@@ -2,35 +2,12 @@ from .permissions import is_admin
 from ..models import Player, PlayerSession
 
 
-def render_matches(request, session):
+def render_courts(request, session):
     courts = session.courts.all().order_by("number")
-
-    court_data = []
-
-    for court in courts:
-        match = court.matches.filter(finished=False).first()
-
-        team1 = []
-        team2 = []
-
-        if match: 
-            for team in match.teams.all():
-                if team.team_number == 1:
-                    team1 = [p.player for p in team.participants.all()]
-                else:
-                    team2 = [p.player for p in team.participants.all()]
-
-        court_data.append({
-            "court": court,
-            "active": court.active,
-            "match": match if match else None,
-            "team1": team1,
-            "team2": team2,
-        })
 
     return {
         "session": session,
-        "court_data": court_data,
+        "court_ids": [court.id for court in courts],
         "show_admin_panel": is_admin(request.user),
     }
 
@@ -71,4 +48,29 @@ def render_players(session):
         "session": session,
         "players_waiting": players_waiting_dict,
         "players_not_in_session": players_not_in_session,
+    }
+
+
+def render_single_court(request, session, court):
+    # Adapt this based on your existing render_players / court_board logic
+    match = court.matches.filter(finished=False).first()
+
+    team1 = []
+    team2 = []
+
+    if match: 
+        for team in match.teams.all():
+            if team.team_number == 1:
+                team1 = [p.player for p in team.participants.all()]
+            else:
+                team2 = [p.player for p in team.participants.all()]
+
+    return {
+        'session': session,
+        'court': court,
+        'match': match,
+        "team1": team1,
+        "team2": team2,
+        'active': court.active,   # adjust as needed
+        'show_admin_panel': is_admin(request.user), # or pass from view
     }

@@ -2,99 +2,27 @@
     <h2 class="text-center text-2xl font-bold mb-4">Live Court Board</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {% for item in court_data %}
-        <div class="flex flex-col items-center border rounded-lg p-4 match-box text-center">
-            <strong class="mb-2">Court {{ item.court.number }}</strong>
-
-            {% if item.match %}
-            <!-- Active Match - Show scoring form -->
-            <div class="grid grid-cols-2 gap-4 w-full mb-2">
-                <div class="grid grid-cols-1">
-                  {% if show_admin_panel %}
-                    <span>{{ item.team1.0.get_name_with_mu }}</span>
-                    <span>{{ item.team1.1.get_name_with_mu}}</span>
-                  {% else %}
-                    <span>{{ item.team1.0 }}</span>
-                    <span>{{ item.team1.1 }}</span>
-                  {% endif %}
-                </div>
-
-                <div class="grid grid-cols-1">
-                  {% if show_admin_panel %}
-                    <span>{{ item.team2.0.get_name_with_mu }}</span>
-                    <span>{{ item.team2.1.get_name_with_mu}}</span>
-                  {% else %}
-                    <span>{{ item.team2.0 }}</span>
-                    <span>{{ item.team2.1 }}</span>
-                  {% endif %}
-                </div>
-            </div>
-
-            {% if show_admin_panel %}
-            <form method="post" 
-                hx-post="{% url 'finish_match' uuid=session.uuid match_id=item.match.id %}"
-                hx-target="#session-dashboard"
-                hx-swap="outerHTML"
-                class="w-full">
-
-                <div class="flex justify-around">
-                    <input type="number" 
-                        name="team1_score" 
-                        min="0" 
-                        max="30" 
-                        value="{{ item.team1_score|default:0 }}"
-                        class="w-20 dark-text p-1 border rounded-sm"
-                        placeholder="21"
-                        required>
-
-                    <input type="number" 
-                        name="team2_score" 
-                        min="0" 
-                        max="30" 
-                        value="{{ item.team2_score|default:0 }}"
-                        class="w-20 dark-text p-1 border rounded-sm"
-                        placeholder="21"
-                        required>                
-                </div>
-
-                <button type="submit" class="primary-button mt-4">Finish Match</button>
-            </form>
-            {% endif %}
-
-            {% else %}
-                <!-- No match - Generate Match/Relase Court button -->
-                {% if show_admin_panel and item.active %}
-                    <form method="post" 
-                        hx-post="{% url 'generate_match' uuid=session.uuid court_id=item.court.id %}"
-                        hx-target="#session-dashboard"
-                        hx-swap="outerHTML">
-
-                        <button type="submit" class="primary-button mt-4">Generate Match</button>
-                    </form>
-
-                    <form method="post" 
-                        hx-post="{% url 'release_court' uuid=session.uuid court_id=item.court.id %}"
-                        hx-target="#court-board"
-                        hx-swap="innerHTML">
-                    <button type="submit" class="primary-button mt-4">Release Court</button>
-                    </form>
-
-                {% elif not item.active %}
-                    <div>Court Paused</div>
-                {% endif %}
-            {% endif %}
+        {% for court_id in court_ids %}
+        
+        <div 
+            id="court-{{ court_id }}"
+            class="flex flex-col items-center border rounded-lg p-4 match-box text-center"
+            hx-get="{% url 'single_court' uuid=session.uuid court_id=court_id %}"
+            hx-trigger="load, court_{{ court_id }}_update from:body"
+            hx-swap="innerHTML">
+        Loading Court...
         </div>
+
         {% endfor %}
     </div>
+
     {% if show_admin_panel %}
       <div class="text-center">
         <form method="post" 
             hx-post="{% url 'add_court' uuid=session.uuid %}"
-            hx-target="#court-board"
-            hx-swap="innerHTML">
+            hx-swap="none">
             <button type="submit" class="primary-button mt-4">Add Court</button>
         </form>
       </div>
     {% endif %}
 </div>
-

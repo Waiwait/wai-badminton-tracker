@@ -1,0 +1,75 @@
+ <strong class="mb-2">Court {{ court.number }}</strong>
+
+{% if match %}
+<!-- Active Match - Show scoring form -->
+<div class="grid grid-cols-2 gap-4 w-full mb-2">
+    <div class="grid grid-cols-1">
+        {% if show_admin_panel %}
+        <span>{{ team1.0.get_name_with_mu }}</span>
+        <span>{{ team1.1.get_name_with_mu }}</span>
+        {% else %}
+        <span>{{ team1.0.get_name }}</span>
+        <span>{{ team1.1.get_name }}</span>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1">
+        {% if show_admin_panel %}
+        <span>{{ team2.0.get_name_with_mu }}</span>
+        <span>{{ team2.1.get_name_with_mu }}</span>
+        {% else %}
+        <span>{{ team2.0.get_name }}</span>
+        <span>{{ team2.1.get_name }}</span>
+        {% endif %}
+    </div>
+</div>
+
+{% if show_admin_panel %}
+<form method="post" 
+    hx-post="{% url 'finish_match' uuid=session.uuid match_id=match.id %}"
+    hx-swap="none"
+    class="w-full">
+
+    <div class="flex justify-around">
+        <input type="number" 
+            name="team1_score" 
+            min="0" 
+            max="30" 
+            value="{{ team1_score|default:0 }}"
+            class="w-20 dark-text p-1 border rounded-sm"
+            placeholder="21"
+            required>
+
+        <input type="number" 
+            name="team2_score" 
+            min="0" 
+            max="30" 
+            value="{{ team2_score|default:0 }}"
+            class="w-20 dark-text p-1 border rounded-sm"
+            placeholder="21"
+            required>                
+    </div>
+
+    <button type="submit" class="primary-button mt-4">Finish Match</button>
+</form>
+{% endif %}
+
+{% else %}
+    <!-- No match -->
+    {% if show_admin_panel and active %}
+        <form method="post" 
+            hx-post="{% url 'generate_match' uuid=session.uuid court_id=court.id %}"
+            hx-swap="none">
+            <button type="submit" class="primary-button mt-4">Generate Match</button>
+        </form>
+
+        <form method="post" 
+            hx-post="{% url 'release_court' uuid=session.uuid court_id=court.id %}"
+            hx-swap="none">
+            <button type="submit" class="primary-button mt-4">Release Court</button>
+        </form>
+
+    {% elif not active %}
+        <div>Court Paused</div>
+    {% endif %}
+{% endif %}

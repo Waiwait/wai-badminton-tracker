@@ -2,11 +2,13 @@
 from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
-from ..services.renders import render_matches, render_players
 from ..services.openskill import score_match
 from ..services.matchmaking import matchmaking
 from ..services.match_state import is_cancelled_game
 
+import json
+
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
@@ -20,7 +22,11 @@ def add_player_to_session(request, uuid):
 
     add_player(session, player)
 
-    return render(request, "match/partials/admin_players.html", render_players(session))
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True
+    })
+    return response
 
 
 @user_passes_test(is_admin)
@@ -30,7 +36,11 @@ def remove_player_from_session(request, uuid, player_id):
 
     remove_player(session, player)
 
-    return render(request, "match/partials/admin_players.html", render_players(session))
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True
+    })
+    return response
 
 @user_passes_test(is_admin)
 def finish_match(request, uuid, match_id):
@@ -112,10 +122,13 @@ def finish_match(request, uuid, match_id):
         f"Match on Court {match.court.number} finished! Score: {team1_score} - {team2_score}"
     )
     
-    return render(request, "match/session_dashboard.html", {
-        "session": session,
-        "show_admin_panel": is_admin(request.user),
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True,
+        f"court_{match.court.id}_update": True,
+        "history_update": True,
     })
+    return response
 
 @user_passes_test(is_admin)
 def generate_match(request, uuid, court_id):
@@ -195,10 +208,13 @@ def generate_match(request, uuid, court_id):
         f"New match started on Court {court.number}!"
     )
 
-    return render(request, "match/session_dashboard.html", {
-        "session": session,
-        "show_admin_panel": is_admin(request.user),
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True,
+        f"court_{match.court.id}_update": True
     })
+    print(response["HX-Trigger"])
+    return response
 
 
 @user_passes_test(is_admin)
@@ -222,9 +238,14 @@ def add_court(request, uuid):
                 active=True
             )
         else:
-            messages.error(request, "Maximum of 4 courts allowed")
+            response = HttpResponse("Maximum of 4 courts allowed")
+            return response
 
-    return render(request, "match/partials/court_board.html", render_matches(request, session))
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "court_board_update": True,
+    })
+    return response
 
 
 @user_passes_test(is_admin)
@@ -237,13 +258,16 @@ def release_court(request, uuid, court_id):
 
     if has_active_match:
         # don't allow deactivation
-        return render(request, "match/session_dashboard.html", {
-            "session": session,
-            "error": "Cannot deactivate court: active match in progress",
-            "show_admin_panel": is_admin(request.user),
-        })
+
+        response = HttpResponse("Cannot deactivate court: active match in progress")
+        response["HX-Trigger"] = json.dumps({})
+        return response
 
     court.active = False
     court.save()
 
-    return render(request, "match/partials/court_board.html", render_matches(request, session))
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        f"court_{court.id}_update": True
+    })
+    return response

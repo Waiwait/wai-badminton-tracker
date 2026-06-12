@@ -17,10 +17,23 @@ class Player(models.Model):
     def __str__(self):
         return f"{self.name}"
     
+    @staticmethod
+    def format_name_gender(name, is_female):
+        color_class = "text-pink-300 font-medium" if is_female else "text-blue-300 font-medium"
+        return f'<span class="{color_class}">{name}</span>'
+
     def get_name_with_mu(self):
-        return mark_safe(f"{self.name}<sup>{self.mu}</sup>")
+        
+        return mark_safe(f"{self.format_name_gender(self.name, self.gender == "F")}<sup>{self.mu}</sup>")
+    
 
+    def get_name(self):
+        
+        return mark_safe(f"{self.format_name_gender(self.name, self.gender == "F")}")
+    
+    
 
+    
 class Session(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)

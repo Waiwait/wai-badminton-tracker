@@ -1,13 +1,11 @@
-<div>
-    <h2 class="text-2xl font-bold mb-4">Admin</h2>
-</div>
+<h2 class="text-2xl font-bold mb-4">Admin</h2>
 
-<div id="players-container">
+
+<div id="admin-players" 
+     hx-get="{% url 'admin_players' session.uuid %}"
+     hx-trigger="load, every 60s, players_update from:body"
+     hx-swap="innerHTML">
+    <!-- Initially empty or loading message -->
     Loading players...
-</div>
-
-<div
-    hx-get="{% url 'admin_players' uuid=session.uuid %}"
-    hx-target="#players-container"
-    hx-trigger="load, every 5s">
+    </div>
 </div>
