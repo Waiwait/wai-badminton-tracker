@@ -2,6 +2,7 @@
 from ..models import Session, Match
 from ..services.permissions import is_admin
 from ..services.renders import render_matches
+from ..services.match_state import is_cancelled_game
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
@@ -47,13 +48,19 @@ def session_history(request, uuid):
     for match in matches:
         teams = list(match.teams.all())
 
+        cancelled_game = is_cancelled_game(teams[0].score, teams[1].score)
+
         str_1 = f"{', '.join(p.player.name for p in teams[0].participants.all())} {teams[0].score}"
         str_2 = f"{teams[1].score} {', '.join(p.player.name for p in teams[1].participants.all())}"
 
         if len(teams) == 2:
-            line = (
-                f"{format_team(str_1, teams[0].is_winner)} - {format_team(str_2, teams[1].is_winner)}"
-            )
+
+            if not cancelled_game:
+                line = (
+                    f"{format_team(str_1, teams[0].is_winner)} - {format_team(str_2, teams[1].is_winner)}"
+                )
+            else:
+                line = f"<s>{str_1} - {str_2}</s>"
 
             history.append({
                 "court": match.court.number,

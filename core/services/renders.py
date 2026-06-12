@@ -1,5 +1,5 @@
 from .permissions import is_admin
-from ..models import Player
+from ..models import Player, PlayerSession
 
 
 def render_matches(request, session):
@@ -45,8 +45,22 @@ def render_players(session):
         matchparticipant__match_team__match__court__session=session,
         matchparticipant__match_team__match__finished=False
     ).distinct()
+    
 
     players_waiting = session_players.exclude(id__in=in_match_players)
+
+    player_sessions = PlayerSession.objects.filter(
+    session=session,
+    player__in=players_waiting,).select_related("player")
+
+    players_waiting_dict = [
+    {
+        "id": ps.player.id,
+        "name": ps.player.name,
+        "games_played": ps.games_played,
+    }
+    for ps in player_sessions
+]
 
     # Players not in this session at all
     players_not_in_session = Player.objects.exclude(
@@ -55,6 +69,6 @@ def render_players(session):
 
     return {
         "session": session,
-        "players_waiting": players_waiting,
+        "players_waiting": players_waiting_dict,
         "players_not_in_session": players_not_in_session,
     }

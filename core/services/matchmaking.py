@@ -41,15 +41,15 @@ def eval_pair_games_played(players):
 
 
 def eval_match_played_against(teams):
-    """Evaluates opponent freshness. Expects teams = (team1, team2)"""
+    """Evaluates opponent freshness. Returns score in [-1, 1]."""
     if not teams or len(teams) != 2:
-        return False, 1.0
+        return 1.0
 
     team1, team2 = teams
     all_players = list(team1) + list(team2)
 
     if len(all_players) < 2:
-        return False, 1.0
+        return 1.0
 
     total_ratio = 0.0
     active_players = 0
@@ -78,20 +78,19 @@ def eval_match_played_against(teams):
             active_players += 1
 
     if active_players == 0:
-        return True, 1.0
+        return 1.0
 
     avg_ratio = total_ratio / active_players
     unfairness = min(1.0, avg_ratio / 0.3)
     score = 1 - 2 * unfairness
 
-    is_good = avg_ratio <= 0.32
-    return is_good, score
+    return max(-1.0, min(1.0, score))
 
 
 def eval_match_played_with(teams):
-    """Evaluates teammate freshness. Expects teams = (team1, team2)"""
+    """Evaluates teammate freshness. Returns score in [-1, 1]."""
     if not teams or len(teams) != 2:
-        return False, 1.0
+        return 1.0
 
     team1, team2 = teams
     all_players = list(team1) + list(team2)
@@ -126,35 +125,78 @@ def eval_match_played_with(teams):
             active_players += 1
 
     if active_players == 0:
-        return True, 1.0
+        return 1.0
 
     avg_ratio = total_ratio / active_players
     unfairness = min(1.0, avg_ratio / 0.3)
     score = 1 - 2 * unfairness
 
-    is_good = avg_ratio <= 0.32
-    return is_good, score
+    return max(-1.0, min(1.0, score))
+
+def eval_games_played(teams):
+    """Evaluates playtime fairness using pre-normalized scores."""
+    if not teams or len(teams) != 2:
+        return 1.0
+
+    gps_list = [
+        player.get("play_fairness_score", 0.0)
+        for team in teams
+        for player in team
+    ]
+
+    if not gps_list:
+        return 1.0
+
+    avg_score = sum(gps_list) / len(gps_list)
+    return max(-1.0, min(1.0, avg_score))
+
+
+def eval_gender_balance(teams):
+    """Evaluates gender balance. Returns score in [-1, 1]."""
+    if not teams or len(teams) != 2:
+        return 0.0
+
+    team1, team2 = teams
+
+    def get_composition(team):
+        males = sum(1 for p in team if p.get("gender") == "M")
+        if males == 2:
+            return "MM"
+        elif males == 0:
+            return "FF"
+        else:
+            return "MF"
+
+    t1 = get_composition(team1)
+    t2 = get_composition(team2)
+
+    if t1 == t2:
+        return 1
+
+    elif (t1 == "MM" and t2 == "FF") or (t1 == "FF" and t2 == "MM"):
+        return -1                                     # Worst case
+
+    else:
+        return 0.4
 
 
 def eval_match_fairness(teams):
-    """Evaluates skill fairness. Expects teams = (team1, team2)"""
-
+    """Evaluates skill fairness. Returns score in [-1, 1]."""
     raw_diff = evaluate_win_differential(teams)
 
     unfairness = raw_diff ** 1.65
-    fairness_score = 1 - 2 * unfairness
-    fairness_score = max(min(fairness_score, 1.0), -1.0)
-
-    is_fair = raw_diff >= 0.25
-    return is_fair, fairness_score
+    score = 1 - 2 * unfairness
+    return max(-1.0, min(1.0, score))
 
 
 # ====================== CONDITION REGISTRATION ======================
 
 match_condition_funcs = {
-    "played_against": {"func": eval_match_played_against, "weight": 3},
-    "played_with":    {"func": eval_match_played_with,    "weight": 5},
-    "fairness":       {"func": eval_match_fairness,       "weight": 10},
+    "games_played":         {"func": eval_games_played,         "weight": 10},
+    "fairness":             {"func": eval_match_fairness,       "weight": 10},
+    "played_with":          {"func": eval_match_played_with,    "weight": 5},
+    "played_against":       {"func": eval_match_played_against, "weight": 3},
+    "gender":               {"func": eval_gender_balance,       "weight": 2},
 }
 
 pair_condition_funcs = {
@@ -203,18 +245,60 @@ def _calculate_played_with(session):
     return played_with, played_against
 
 
+def _calculate_normalised_playtime(players_waiting, player_sessions):
+    ratios = {}
+    for p in players_waiting:
+        ps = player_sessions.get(p.id)
+        gp = ps.games_played if ps else 0
+        gs = ps.games_skipped if ps else 0
+        ratio = gp / (gp + gs + 1)                    # base play ratio
+        ratios[p.id] = ratio
+
+    if ratios:
+        min_ratio = min(ratios.values())
+        max_ratio = max(ratios.values())
+        range_ratio = max(1e-5, max_ratio - min_ratio)   # avoid div by zero
+
+        # Normalized fairness score: -1.0 (played too much) → +1.0 (needs to play)
+        for pid, ratio in ratios.items():
+            normalized = (ratio - min_ratio) / range_ratio          # 0 to 1
+            fairness_score = 1.0 - 2.0 * normalized                 # invert → -1 to +1
+            ratios[pid] = round(fairness_score, 3)                  # store back
+    else:
+        # No players
+        return 
+    
+    return ratios
+
+
 def generate_config(players_waiting, session):
     """Generate player config with skill + history data."""
     played_with, played_against = _calculate_played_with(session)
 
+
+    # Pre-fetch PlayerSession records for all waiting players in one query
+    player_sessions = {
+        ps.player_id: ps 
+        for ps in PlayerSession.objects.filter(
+            session=session,
+            player_id__in=[p.id for p in players_waiting]
+        )
+    }
+
     result = {}
 
+    games_played_score = _calculate_normalised_playtime(players_waiting, player_sessions)
+
+
     for p in players_waiting:
+
         result[p.id] = {
             "id": p.id,
             "name": p.name,
+            "gender": p.gender,
             "mu": p.mu,
             "sigma": p.sigma,
+            "games_played_score": games_played_score.get(p.id, 0.0),
             "played_with": dict(played_with[p.id]),
             "played_against": dict(played_against[p.id])
         }
@@ -264,32 +348,46 @@ def _get_blacklisted_pairs(players):
     return blacklisted
 
 
-def matchmaking(players_waiting, session):
+def matchmaking(players_waiting, session, top_n=5):
     set_model()
     players_dict = generate_config(players_waiting, session)
     players = list(players_dict.values())
 
-    # 1. Pre-compute blacklisted pairs
     blacklisted_pairs = _get_blacklisted_pairs(players)
 
     potential_matches = []
+    best_scores = []
+
+    def update_best(score):
+        best_scores.append(score)
+        best_scores.sort(reverse=True)
+        if len(best_scores) > top_n:
+            best_scores.pop()
+
+    max_possible = sum(cond["weight"] for cond in match_condition_funcs.values())
 
     for four in combinations(players, 4):
         for team1, team2 in _splits(four, blacklisted_pairs):
             overall_score = 0.0
-            keep = True
+            upper_bound = max_possible   # start optimistic
 
             for cond in match_condition_funcs.values():
-                if not keep:
-                    break
-                keep, score = cond["func"]((team1, team2))
+                score = cond["func"]((team1, team2))
+                
                 overall_score += cond["weight"] * score
+                upper_bound -= cond["weight"] * (1.0 - score)   # subtract lost potential
+                
+                # Early pruning
+                if upper_bound < (best_scores[-1] if best_scores else -999):
+                    break
 
-            if keep:
+            if overall_score > (best_scores[-1] if best_scores else -999):
                 potential_matches.append({
                     "teams": [team1, team2],
                     "score": overall_score
                 })
+                update_best(overall_score)
 
+    # Final sort (only the survivors)
     sorted_matches = sorted(potential_matches, key=lambda x: x["score"], reverse=True)
-    return sorted_matches
+    return sorted_matches[:top_n]

@@ -5,7 +5,7 @@
     <ul class="mb-4">
         {% for player in players_waiting %}
             <li>
-                {{ player.name }}
+                {{ player.name }} [{{ player.games_played }}]
 
                 <button
                     hx-post="{% url 'remove_player_from_session' uuid=session.uuid player_id=player.id %}"

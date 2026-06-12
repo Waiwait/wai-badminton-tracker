@@ -10,13 +10,23 @@
             <!-- Active Match - Show scoring form -->
             <div class="grid grid-cols-2 gap-4 w-full mb-2">
                 <div class="grid grid-cols-1">
+                  {% if show_admin_panel %}
+                    <span>{{ item.team1.0.get_name_with_mu }}</span>
+                    <span>{{ item.team1.1.get_name_with_mu}}</span>
+                  {% else %}
                     <span>{{ item.team1.0 }}</span>
-                    <span>{{ item.team1.1}}</span>
+                    <span>{{ item.team1.1 }}</span>
+                  {% endif %}
                 </div>
 
                 <div class="grid grid-cols-1">
+                  {% if show_admin_panel %}
+                    <span>{{ item.team2.0.get_name_with_mu }}</span>
+                    <span>{{ item.team2.1.get_name_with_mu}}</span>
+                  {% else %}
                     <span>{{ item.team2.0 }}</span>
-                    <span>{{ item.team2.1}}</span>
+                    <span>{{ item.team2.1 }}</span>
+                  {% endif %}
                 </div>
             </div>
 
