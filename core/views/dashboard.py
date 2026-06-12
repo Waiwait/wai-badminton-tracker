@@ -1,7 +1,7 @@
 
-from ..models import Session, Match
+from ..models import Session, Match, Court
 from ..services.permissions import is_admin
-from ..services.renders import render_matches
+from ..services.renders import render_courts, render_single_court
 from ..services.match_state import is_cancelled_game
 
 from django.shortcuts import render, get_object_or_404
@@ -22,8 +22,15 @@ def court_board(request, uuid):
     return render(
         request,
         "match/partials/court_board.html",
-        render_matches(request, session)
+        render_courts(request, session)
         )
+
+def single_court(request, uuid, court_id):
+    session = get_object_or_404(Session, uuid=uuid)
+    court = get_object_or_404(Court, id=court_id, session=session)
+    
+    context = render_single_court(request, session, court)
+    return render(request, "match/partials/single_court.html", context)
 
 
 def session_history(request, uuid):
@@ -70,12 +77,4 @@ def session_history(request, uuid):
     return render(request, "match/partials/session_history.html", {
         "session": session,
         "history": history,
-    })
-
-
-@user_passes_test(is_admin)
-def admin_dashboard(request, uuid):
-    session = get_object_or_404(Session, uuid=uuid)
-    return render(request, "match/partials/admin_dashboard.html", {
-        "session": session,
     })

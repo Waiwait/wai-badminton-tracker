@@ -7,7 +7,7 @@
         <div
             hx-get="{% url 'court_board' uuid=session.uuid %}"
             {% if show_admin_panel %}
-                hx-trigger="load, every 30s"
+                hx-trigger="load, every 60s, court_board_update from:body"
             {% else %}
                 hx-trigger="load, every 5s"
             {% endif %}
@@ -21,7 +21,7 @@
         <div
             hx-get="{% url 'session_history' uuid=session.uuid %}"
             {% if show_admin_panel %}
-                hx-trigger="load, every 30s"
+                hx-trigger="load, every 60s, history_update from:body"
             {% else %}
                 hx-trigger="load, every 5s"
             {% endif %}
@@ -33,13 +33,7 @@
 
     <section>
         {% if show_admin_panel %}
-        <div
-            hx-get="{% url 'admin_dashboard' uuid=session.uuid %}"
-            hx-trigger="load"
-            hx-swap="innerHTML"
-        >
-            Loading admin panel...
-        </div>
+            {% include "match/partials/admin_dashboard.html" %}
         {% endif %}
     </section>
 

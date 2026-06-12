@@ -15,8 +15,11 @@ urlpatterns = [
         name="session_history",
     ),
 
+    path('session/<uuid:uuid>/court/<int:court_id>/', 
+     dashboard.single_court, 
+     name='single_court'),
+
     # admin
-    path("session/<uuid:uuid>/admin/dashboard/", dashboard.admin_dashboard, name="admin_dashboard"),
     path("session/<uuid:uuid>/admin/players/", admin.admin_players, name="admin_players"),
 
     path(
