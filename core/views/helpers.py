@@ -1,10 +1,11 @@
 
-from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant
+from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
 from ..services.renders import render_matches, render_players
 from ..services.openskill import score_match
 from ..services.matchmaking import matchmaking
+from ..services.match_state import is_cancelled_game
 
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
@@ -31,7 +32,6 @@ def remove_player_from_session(request, uuid, player_id):
 
     return render(request, "match/partials/admin_players.html", render_players(session))
 
-
 @user_passes_test(is_admin)
 def finish_match(request, uuid, match_id):
     session = get_object_or_404(Session, uuid=uuid)
@@ -53,8 +53,13 @@ def finish_match(request, uuid, match_id):
     team1.score = team1_score
     team2.score = team2_score
 
+    cancelled_game = is_cancelled_game(team1_score, team2_score)
+
     # Determine winner
-    if team1_score > team2_score:
+    if cancelled_game:
+        team1.is_winner = False
+        team2.is_winner = False
+    elif team1_score > team2_score:
         team1.is_winner = True
         team2.is_winner = False
     elif team2_score > team1_score:
@@ -69,12 +74,38 @@ def finish_match(request, uuid, match_id):
 
     match.finished = True
     match.save()
+    
+    if not cancelled_game:
+        try:
+            score_match(match)
+        except Exception as e:
+            messages.warning(
+                request, 
+                f"Match on Court {match.court.number} finished! Could not score match: {e}"
+            )
 
-    try:
-        score_match(match)
-    except Exception as e:
-        print(e)
+    if not cancelled_game:
+        # Update games_played / games_skipped
+        played_players = set()
+        for team in [team1, team2]:
+            for participant in team.participants.all():
+                played_players.add(participant.player_id)
 
+        player_sessions = PlayerSession.objects.filter(
+            session=session,
+            pause=False
+        )
+
+        updates = []
+        for ps in player_sessions:
+            if ps.player_id in played_players:
+                ps.games_played = models.F('games_played') + 1
+            else:
+                ps.games_skipped = models.F('games_skipped') + 1
+            updates.append(ps)
+
+        if updates:
+            PlayerSession.objects.bulk_update(updates, ['games_played', 'games_skipped'])
 
     messages.success(
         request, 
@@ -85,7 +116,6 @@ def finish_match(request, uuid, match_id):
         "session": session,
         "show_admin_panel": is_admin(request.user),
     })
-
 
 @user_passes_test(is_admin)
 def generate_match(request, uuid, court_id):
@@ -195,6 +225,7 @@ def add_court(request, uuid):
             messages.error(request, "Maximum of 4 courts allowed")
 
     return render(request, "match/partials/court_board.html", render_matches(request, session))
+
 
 @user_passes_test(is_admin)
 def release_court(request, uuid, court_id):

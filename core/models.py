@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from django.utils.safestring import mark_safe
 
 class Player(models.Model):
     name = models.CharField(max_length=100)
@@ -16,6 +16,9 @@ class Player(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+    
+    def get_name_with_mu(self):
+        return mark_safe(f"{self.name}<sup>{self.mu}</sup>")
 
 
 class Session(models.Model):
@@ -38,6 +41,8 @@ class PlayerSession(models.Model):
     
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    games_skipped = models.IntegerField(default = 0)
+    games_played = models.IntegerField(default = 0)
     pause = models.BooleanField(default=False)
 
     class Meta:
