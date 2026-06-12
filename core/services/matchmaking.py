@@ -139,7 +139,7 @@ def eval_games_played(teams):
         return 1.0
 
     gps_list = [
-        player.get("play_fairness_score", 0.0)
+        player.get("games_played_score")
         for team in teams
         for player in team
     ]
@@ -192,7 +192,7 @@ def eval_match_fairness(teams):
 # ====================== CONDITION REGISTRATION ======================
 
 match_condition_funcs = {
-    "games_played":         {"func": eval_games_played,         "weight": 10},
+    "games_played":         {"func": eval_games_played,         "weight": 32},
     "fairness":             {"func": eval_match_fairness,       "weight": 10},
     "played_with":          {"func": eval_match_played_with,    "weight": 5},
     "played_against":       {"func": eval_match_played_against, "weight": 3},

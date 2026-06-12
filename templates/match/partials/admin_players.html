@@ -5,9 +5,9 @@
 <ul class="mb-4">
     {% for player in players_waiting %}
         <li>
-            {{ player.name }} [{{ player.games_played }}]
+            {{ player.name_played }}
             <button
-                hx-post="{% url 'remove_player_from_session' uuid=session.uuid player_id=player.id %}"
+                hx-post="{% url 'pause_player_in_session' uuid=session.uuid player_id=player.id %}"
                 class="link-button-danger ml-2">
                 Remove
             </button>
@@ -19,7 +19,7 @@
 
 <h3 class="font-bold">Not In Session</h3>
 <ul>
-    {% for player in players_not_in_session %}
+    {% for player in players_not_in_session_or_paused %}
         <li>
             {{ player.name }}
 
@@ -33,3 +33,17 @@
     {% endfor %}
 </ul>
 
+
+{% if show_admin_panel and active %}
+        <form method="post" 
+            hx-post="{% url 'generate_match' uuid=session.uuid court_id=court.id %}"
+            hx-swap="none">
+            <button type="submit" class="primary-button mt-4">Generate Match</button>
+        </form>
+
+        <form method="post" 
+            hx-post="{% url 'release_court' uuid=session.uuid court_id=court.id %}"
+            hx-swap="none">
+            <button type="submit" class="primary-button mt-4">Release Court</button>
+        </form>
+    {% endif %}

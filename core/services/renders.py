@@ -1,6 +1,8 @@
 from .permissions import is_admin
 from ..models import Player, PlayerSession
 
+from django.utils.safestring import mark_safe
+
 
 def render_courts(request, session):
     courts = session.courts.all().order_by("number")
@@ -24,30 +26,40 @@ def render_players(session):
     ).distinct()
     
 
-    players_waiting = session_players.exclude(id__in=in_match_players)
+    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+        playersession__session=session,
+        playersession__pause=False)
 
     player_sessions = PlayerSession.objects.filter(
     session=session,
     player__in=players_waiting,).select_related("player")
 
-    players_waiting_dict = [
-    {
-        "id": ps.player.id,
-        "name": ps.player.name,
-        "games_played": ps.games_played,
-    }
-    for ps in player_sessions
-]
+    players_waiting_dict = sorted([
+        {
+            "id": ps.player.id,
+            "name": ps.player.name,
+            "name_played": mark_safe(f"{Player.format_name_gender(ps.player.name, ps.player.gender == "F")}<sup>{ps.games_played}|{ps.games_skipped + ps.games_played}</sup>"),
+        }
+        for ps in player_sessions
+    ], key=lambda p: (p["name"].lower()))
 
     # Players not in this session at all
-    players_not_in_session = Player.objects.exclude(
-        playersession__session=session
+    players_paused = Player.objects.filter(
+        playersession__pause=True,
+        playersession__session=session,
     ).distinct()
 
+    players_not_in_session = Player.objects.exclude(
+        playersession__session=session
+    ).distinct().order_by("name")
+
+    combined = players_paused | players_not_in_session
+    combined = combined.distinct()
+    
     return {
         "session": session,
         "players_waiting": players_waiting_dict,
-        "players_not_in_session": players_not_in_session,
+        "players_not_in_session_or_paused": combined,
     }
 
 

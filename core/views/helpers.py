@@ -20,7 +20,15 @@ def add_player_to_session(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
     player = get_object_or_404(Player, id=request.POST["player_id"])
 
-    add_player(session, player)
+
+    player_session, created = PlayerSession.objects.get_or_create(
+        session=session,
+        player=player,
+    )
+
+    if not created:
+        player_session.pause = False
+        player_session.save(update_fields=["pause"])
 
     response = HttpResponse("ok")
     response["HX-Trigger"] = json.dumps({
@@ -30,17 +38,21 @@ def add_player_to_session(request, uuid):
 
 
 @user_passes_test(is_admin)
-def remove_player_from_session(request, uuid, player_id):
+def pause_player_in_session(request, uuid, player_id):
     session = get_object_or_404(Session, uuid=uuid)
     player = get_object_or_404(Player, id=player_id)
 
-    remove_player(session, player)
+    PlayerSession.objects.filter(
+        session=session,
+        player=player
+    ).update(pause=True)
 
     response = HttpResponse("ok")
     response["HX-Trigger"] = json.dumps({
         "players_update": True
     })
     return response
+
 
 @user_passes_test(is_admin)
 def finish_match(request, uuid, match_id):
@@ -161,7 +173,10 @@ def generate_match(request, uuid, court_id):
         matchparticipant__match_team__match__finished=False
     ).distinct()
 
-    players_waiting = session_players.exclude(id__in=in_match_players)
+    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+    playersession__pause=False,
+    playersession__session=session,
+)
 
     # Need at least 4 players
     if len(players_waiting) < 4:
