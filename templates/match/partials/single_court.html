@@ -72,6 +72,9 @@
         </form>
 
     {% elif not active %}
-        <div>Court Paused</div>
+        <p class="text-gray-500 italic">Court paused.</p>
+    {% else %}
+        <p class="text-gray-500 italic">Waiting for match.</p>
+
     {% endif %}
 {% endif %}

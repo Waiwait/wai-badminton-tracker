@@ -1,4 +1,4 @@
-from ..models import PlayerSession, Match
+from ..models import PlayerSession, Match, Pair
 from .openskill import evaluate_win_differential, set_model
 
 from collections import defaultdict
@@ -37,7 +37,15 @@ def eval_pair_games_played(players):
     avg_total_games = (p1_total + p2_total) / 2.0
     ratio = games_together / avg_total_games
 
-    return ratio <= 0.32
+    return ratio <= 0.4
+
+
+def eval_pair_pairings(players):
+
+    if players[0]["partner_id"] is None and players[1]["partner_id"] is None: return True
+    if players[0]["id"] == players[1]["partner_id"] and players[1]["id"] == players[0]["partner_id"]: return True
+
+    return False
 
 
 def eval_match_played_against(teams):
@@ -189,10 +197,11 @@ def eval_match_fairness(teams):
     return max(-1.0, min(1.0, score))
 
 
+
 # ====================== CONDITION REGISTRATION ======================
 
 match_condition_funcs = {
-    "games_played":         {"func": eval_games_played,         "weight": 32},
+    "games_played":         {"func": eval_games_played,         "weight": 28},
     "fairness":             {"func": eval_match_fairness,       "weight": 10},
     "played_with":          {"func": eval_match_played_with,    "weight": 5},
     "played_against":       {"func": eval_match_played_against, "weight": 3},
@@ -201,6 +210,7 @@ match_condition_funcs = {
 
 pair_condition_funcs = {
     "games_played": eval_pair_games_played,
+    "pairing": eval_pair_pairings,
 }
 
 
@@ -287,6 +297,16 @@ def generate_config(players_waiting, session):
 
     result = {}
 
+    partners = {}
+
+    pairs = Pair.objects.filter(session=session).values_list(
+    'player1_s__player_id',
+    'player2_s__player_id',
+)
+    for p1_id, p2_id in pairs:
+        partners[p1_id] = p2_id
+        partners[p2_id] = p1_id
+
     games_played_score = _calculate_normalised_playtime(players_waiting, player_sessions)
 
 
@@ -300,7 +320,8 @@ def generate_config(players_waiting, session):
             "sigma": p.sigma,
             "games_played_score": games_played_score.get(p.id, 0.0),
             "played_with": dict(played_with[p.id]),
-            "played_against": dict(played_against[p.id])
+            "played_against": dict(played_against[p.id]),
+            "partner_id": partners.get(p.id, None)
         }
 
     return result

@@ -1,6 +1,5 @@
  <strong class="mb-2">Upcoming Match</strong>
 
-
 {% if upcoming_match %}
 
 <div class="grid grid-cols-2 gap-4 w-full mb-2">
@@ -28,7 +27,7 @@
 </div>
 
 {% if show_admin_panel %}
-    value: {{ value }}
+    Value: {{ value }}
     <form method="post"
         hx-post="{% url 'delete_upcoming_match' uuid=session.uuid upcoming_match_id=upcoming_match_id %}"
         hx-swap="none">
@@ -43,12 +42,14 @@
 {% endif %}
 {% else %}
 
-<form method="post"
-    hx-post="{% url 'generate_upcoming_match' uuid=session.uuid %}"
-    hx-swap="none">
-    <button type="submit" class="primary-button mt-4">
-        Generate Upcoming Match
-    </button>
-</form>
+{% if show_admin_panel %}
+    <form method="post"
+        hx-post="{% url 'generate_upcoming_match' uuid=session.uuid %}"
+        hx-swap="none">
+        <button type="submit" class="primary-button mt-4">
+            Generate Upcoming Match
+        </button>
+    </form>
+{% endif %}
 
 {% endif %}

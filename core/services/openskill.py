@@ -1,6 +1,5 @@
 from ..models import Player
 
-from itertools import combinations
 from openskill.models import PlackettLuce
 
 

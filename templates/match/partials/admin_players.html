@@ -1,35 +1,42 @@
 
-<h2 class="font-bold mb-4">Players:</h2>
+<h2 class="text-center font-bold mb-4">Waiting Players</h2>
 
-<h3 class="font-bold">In Session</h3>
-<ul class="mb-4">
+<div class="space-y-2 mb-6">
     {% for player in players_waiting %}
-        <li>
-            {{ player.name_played }}
-            <button
-                hx-post="{% url 'pause_player_in_session' uuid=session.uuid player_id=player.id %}"
-                class="link-button-danger ml-2">
-                Remove
-            </button>
-        </li>
-    {% empty %}
-        <li>N/A</li>
+        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+            <div class="font-medium">
+                {{ player.name_played }}
+            </div>
+
+            <form method="post" 
+                  hx-post="{% url 'pause_player_in_session' uuid=session.uuid player_id=player.id %}" 
+                  hx-swap="none"
+                {% csrf_token %}
+                <button type="submit" 
+                        class="text-red-600 hover:text-red-700 text-sm font-medium">
+                    Remove
+                </button>
+            </form>        
+        </div>
+        {% empty %}
+        <p class="text-gray-500 italic">No players yet.</p>
     {% endfor %}
-</ul>
+    </div>
 
-<h3 class="font-bold">Not In Session</h3>
-<ul>
-    {% for player in players_not_in_session_or_paused %}
-        <li>
-            {{ player.name }}
+<form
+    hx-post="{% url 'add_player_to_session' uuid=session.uuid %}"
+    hx-swap="none"
+>
+    {% csrf_token %}
 
-            <button
-                hx-post="{% url 'add_player_to_session' uuid=session.uuid %}"
-                hx-vals='{"player_id": "{{ player.id }}"}'
-                class="link-button-green ml-2">
-                Add
-            </button>
-        </li>
-    {% endfor %}
-</ul>
+    <select name="player_id" class="border rounded p-2 w-full text-black">
+        {% for player in players_not_in_session_or_paused %}
+            <option value="{{ player.id }}">
+                {{ player.get_name }}
+            </option>
+        {% endfor %}
+    </select>
 
+    <button type="submit" class="primary-button mt-6 w-full">
+        Add Player
+</form>

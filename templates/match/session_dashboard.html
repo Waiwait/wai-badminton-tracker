@@ -17,7 +17,13 @@
         </div>            
     </section>
 
-     <section>
+    <section>
+        {% if show_admin_panel %}
+            {% include "match/partials/admin_dashboard.html" %}
+        {% endif %}
+    </section>
+
+    <section>
         <div
             hx-get="{% url 'session_history' uuid=session.uuid %}"
             {% if show_admin_panel %}
@@ -29,12 +35,6 @@
         >
             Loading history...
         </div>            
-    </section>
-
-    <section>
-        {% if show_admin_panel %}
-            {% include "match/partials/admin_dashboard.html" %}
-        {% endif %}
     </section>
 
 </div>

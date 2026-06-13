@@ -5,7 +5,6 @@ from ..services.renders import render_courts, render_single_court, render_upcomi
 from ..services.match_state import is_cancelled_game
 
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import user_passes_test
 from django.utils.safestring import mark_safe
 
 
@@ -57,8 +56,8 @@ def session_history(request, uuid):
 
         cancelled_game = is_cancelled_game(teams[0].score, teams[1].score)
 
-        str_1 = f"{', '.join(p.player.name for p in teams[0].participants.all())} {teams[0].score}"
-        str_2 = f"{teams[1].score} {', '.join(p.player.name for p in teams[1].participants.all())}"
+        str_1 = f"{', '.join(p.player.name_coloured() for p in teams[0].participants.all())} {teams[0].score}"
+        str_2 = f"{teams[1].score} {', '.join(p.player.name_coloured() for p in teams[1].participants.all())}"
 
         if len(teams) == 2:
 
@@ -88,4 +87,4 @@ def upcoming_match(request, uuid):
     ).order_by("-value").first()
 
 
-    return render(request, "match/partials/upcoming_match.html",render_upcoming_match(request, session, upcoming_match))
+    return render(request, "match/partials/upcoming_match.html", render_upcoming_match(request, session, upcoming_match))
