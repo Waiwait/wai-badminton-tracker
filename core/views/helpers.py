@@ -1,5 +1,5 @@
 
-from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession
+from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession, UpcomingMatch
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
 from ..services.openskill import score_match
@@ -228,7 +228,6 @@ def generate_match(request, uuid, court_id):
         "players_update": True,
         f"court_{match.court.id}_update": True
     })
-    print(response["HX-Trigger"])
     return response
 
 
@@ -285,4 +284,160 @@ def release_court(request, uuid, court_id):
     response["HX-Trigger"] = json.dumps({
         f"court_{court.id}_update": True
     })
+    return response
+
+
+@user_passes_test(is_admin)
+def generate_upcoming_match(request, uuid):
+
+    session = get_object_or_404(Session, uuid=uuid)
+
+    print("yo")
+
+
+    # All players registered in this session
+    session_players = Player.objects.filter(
+        playersession__session=session
+    ).distinct()
+
+    # Players currently in a match in this session
+    in_match_players = Player.objects.filter(
+        matchparticipant__match_team__match__court__session=session,
+        matchparticipant__match_team__match__finished=False
+    ).distinct()
+
+    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+    playersession__pause=False,
+    playersession__session=session,
+)
+
+    # Need at least 4 players
+    if players_waiting.count() < 4:
+        return HttpResponse("Need 4+ waiting players to generate an upcoming game")
+    
+
+    upcoming_matches = matchmaking(players_waiting=players_waiting, session=session)
+
+    for upcoming_match in upcoming_matches:
+
+        p_ids = []
+
+        for team in upcoming_match["teams"]:
+            for player in team:
+                p_ids.append(str(player["id"]))
+
+        UpcomingMatch.objects.create(
+            value = upcoming_match["score"],
+            session = session,
+            player_ids = ",".join(p_ids)
+        )
+
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        f"upcoming_match_update": True,
+         "all_courts_update": True,})
+    print(response["HX-Trigger"])
+    return response
+
+
+
+@user_passes_test(is_admin)
+def add_upcoming_match_to_court(request, uuid, court_id, upcoming_match_id):
+
+    session = get_object_or_404(Session, uuid=uuid)
+    upcoming_match = get_object_or_404(UpcomingMatch, id=upcoming_match_id)
+    court = get_object_or_404(
+        Court, 
+        id=court_id, 
+        session=session
+    )
+
+    # All players registered in this session
+    session_players = Player.objects.filter(
+        playersession__session=session
+    ).distinct()
+
+    # Players currently in a match in this session
+    in_match_players = Player.objects.filter(
+        matchparticipant__match_team__match__court__session=session,
+        matchparticipant__match_team__match__finished=False
+    ).distinct()
+
+    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+    playersession__pause=False,
+    playersession__session=session,
+)
+    
+    p_waiting_ids = []
+    p_waiting_ids = [p.id for p in players_waiting]
+
+    upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
+
+    for p_id in upcoming_player_ids:
+        if p_id not in p_waiting_ids:
+            upcoming_match.delete()
+            response = HttpResponse("Missing players to generate this game. Deleting Game.")
+            response["HX-Trigger"] = json.dumps({
+                f"upcoming_match_update": True})
+            print(response["HX-Trigger"])
+            return response
+
+
+    # Create new Match
+    match = Match.objects.create(court=court)
+
+    # Create two teams
+    team1 = MatchTeam.objects.create(match=match, team_number=1)
+    team2 = MatchTeam.objects.create(match=match, team_number=2)
+
+    def create_player(player_id, team):
+        player = Player.objects.get(id=player_id)
+        MatchParticipant.objects.create(
+            match_team=team,
+            player=player
+        )
+    # Assign 2 players to each team
+    create_player(upcoming_player_ids[0], team1)
+    create_player(upcoming_player_ids[1], team1)
+    create_player(upcoming_player_ids[2], team2)
+    create_player(upcoming_player_ids[3], team2)
+
+
+    messages.success(
+        request, 
+        f"New match started on Court {court.number}!"
+    )
+
+    UpcomingMatch.objects.filter(session__uuid=uuid).delete()
+
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True,
+        "upcoming_match_update": True,
+        f"all_courts_update": True,
+    })
+    return response
+
+
+@user_passes_test(is_admin)
+def delete_upcoming_match(request, uuid, upcoming_match_id):
+
+    get_object_or_404(UpcomingMatch, id=upcoming_match_id).delete()
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        f"upcoming_match_update": True,
+       "all_courts_update": True,})
+    print(response["HX-Trigger"])
+    return response
+
+
+@user_passes_test(is_admin)
+def delete_upcoming_matches(request, uuid):
+
+    UpcomingMatch.objects.filter(session__uuid=uuid).delete()
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        f"upcoming_match_update": True,
+         "all_courts_update": True,})
+    print(response["HX-Trigger"])
     return response

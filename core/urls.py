@@ -19,6 +19,11 @@ urlpatterns = [
      dashboard.single_court, 
      name='single_court'),
 
+
+    path('session/<uuid:uuid>/upcoming-match/', 
+     dashboard.upcoming_match, 
+     name='upcoming_match'),
+
     # admin
     path("session/<uuid:uuid>/admin/players/", admin.admin_players, name="admin_players"),
 
@@ -34,11 +39,30 @@ urlpatterns = [
         name="pause_player_in_session",
     ),
 
+
     path(
-        "session/<uuid:uuid>/generate-match/<int:court_id>/",
-        helpers.generate_match,
-        name="generate_match",
+        "session/<uuid:uuid>/generate-upcoming-match/",
+        helpers.generate_upcoming_match,
+        name="generate_upcoming_match",
     ),
+
+    path(
+        "session/<uuid:uuid>/add-upcoming-match-to-court/<int:court_id>/<int:upcoming_match_id>",
+        helpers.add_upcoming_match_to_court,
+        name="add_upcoming_match_to_court",
+    ),
+
+    path(
+        "session/<uuid:uuid>/delete-upcoming-match/<int:upcoming_match_id>",
+        helpers.delete_upcoming_match,
+        name="delete_upcoming_match",
+    ),
+    path(
+        "session/<uuid:uuid>/delete-upcoming-matches/",
+        helpers.delete_upcoming_matches,
+        name="delete_upcoming_matches",
+    ),
+
     path(
         "session/<uuid:uuid>/finish-match/<int:match_id>/",
         helpers.finish_match,

@@ -33,17 +33,3 @@
     {% endfor %}
 </ul>
 
-
-{% if show_admin_panel and active %}
-        <form method="post" 
-            hx-post="{% url 'generate_match' uuid=session.uuid court_id=court.id %}"
-            hx-swap="none">
-            <button type="submit" class="primary-button mt-4">Generate Match</button>
-        </form>
-
-        <form method="post" 
-            hx-post="{% url 'release_court' uuid=session.uuid court_id=court.id %}"
-            hx-swap="none">
-            <button type="submit" class="primary-button mt-4">Release Court</button>
-        </form>
-    {% endif %}

@@ -1,14 +1,14 @@
 <div id="court-board">
     <h2 class="text-center text-2xl font-bold mb-4">Live Court Board</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {% for court_id in court_ids %}
         
         <div 
             id="court-{{ court_id }}"
             class="flex flex-col items-center border rounded-lg p-4 match-box text-center"
             hx-get="{% url 'single_court' uuid=session.uuid court_id=court_id %}"
-            hx-trigger="load, court_{{ court_id }}_update from:body"
+            hx-trigger="load, court_{{ court_id }}_update  from:body, all_courts_update from:body"
             hx-swap="innerHTML">
         Loading Court...
         </div>
@@ -16,13 +16,28 @@
         {% endfor %}
     </div>
 
-    {% if show_admin_panel %}
-      <div class="text-center">
-        <form method="post" 
-            hx-post="{% url 'add_court' uuid=session.uuid %}"
-            hx-swap="none">
-            <button type="submit" class="primary-button mt-4">Add Court</button>
-        </form>
-      </div>
-    {% endif %}
+    <div class="flex flex-col items-center space-y-4">
+        {% if show_admin_panel %}
+            <div class="text-center">
+
+                <form method="post" 
+                    hx-post="{% url 'add_court' uuid=session.uuid %}"
+                    hx-swap="none">
+                    <button type="submit" class="primary-button mt-4">
+                        Add Court
+                    </button>
+                </form>
+
+            </div>
+
+        {% endif %}
+        <div 
+            id="court-boar"
+            class="flex flex-col items-center border rounded-lg p-4 match-box text-center"
+            hx-get="{% url 'upcoming_match' uuid=session.uuid %}"
+            hx-trigger="load, upcoming_match_update from:body"
+            hx-swap="innerHTML">
+        Loading Court...
+        </div>
+    </div>
 </div>

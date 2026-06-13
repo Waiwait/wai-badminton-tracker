@@ -123,3 +123,12 @@ class MatchParticipant(models.Model):
 
     def __str__(self):
         return f"{self.player} - {self.match_team}"
+
+
+class UpcomingMatch(models.Model):
+    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    # index of a match queue
+    value = models.DecimalField(max_digits=5, decimal_places=3,)
+    # should be id1,id2,id3,id4 (first 2 should be team1, last2 should be team2)
+    player_ids = models.CharField(max_length=100)
+    

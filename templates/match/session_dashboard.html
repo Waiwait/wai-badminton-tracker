@@ -9,7 +9,7 @@
             {% if show_admin_panel %}
                 hx-trigger="load, every 60s, court_board_update from:body"
             {% else %}
-                hx-trigger="load, every 5s"
+                hx-trigger="load, every 10s"
             {% endif %}
             hx-swap="innerHTML"
         >
@@ -23,7 +23,7 @@
             {% if show_admin_panel %}
                 hx-trigger="load, every 60s, history_update from:body"
             {% else %}
-                hx-trigger="load, every 5s"
+                hx-trigger="load, every 10s"
             {% endif %}
             hx-swap="innerHTML"
         >
