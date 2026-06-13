@@ -1,10 +1,11 @@
 from .permissions import is_admin
-from ..models import Player, PlayerSession
+from ..models import Player, PlayerSession, UpcomingMatch
 
 from django.utils.safestring import mark_safe
-
+from django.shortcuts import get_object_or_404
 
 def render_courts(request, session):
+
     courts = session.courts.all().order_by("number")
 
     return {
@@ -66,6 +67,10 @@ def render_players(session):
 def render_single_court(request, session, court):
     # Adapt this based on your existing render_players / court_board logic
     match = court.matches.filter(finished=False).first()
+    upcoming_match = UpcomingMatch.objects.filter(
+        session=session
+    ).first()
+
 
     team1 = []
     team2 = []
@@ -83,6 +88,34 @@ def render_single_court(request, session, court):
         'match': match,
         "team1": team1,
         "team2": team2,
-        'active': court.active,   # adjust as needed
-        'show_admin_panel': is_admin(request.user), # or pass from view
+        'active': court.active,
+        'show_admin_panel': is_admin(request.user),
+        "upcoming_match_id": upcoming_match.id if upcoming_match else None,
+    }
+
+
+def render_upcoming_match(request, session, upcoming_match):
+
+
+    if not upcoming_match:
+        return {
+            "session": session,
+            "upcoming_match": False,
+        }
+
+    upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
+
+    players = Player.objects.filter(id__in=upcoming_player_ids)
+    players_map = {p.id: p for p in players}
+
+    return {
+        "player1": players_map[upcoming_player_ids[0]],
+        "player2": players_map[upcoming_player_ids[1]],
+        "player3": players_map[upcoming_player_ids[2]],
+        "player4": players_map[upcoming_player_ids[3]],
+        "upcoming_match": True,
+        "upcoming_match_id": upcoming_match.id,
+        "show_admin_panel": is_admin(request.user),
+        "session": session,
+        "value": upcoming_match.value,
     }

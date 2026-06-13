@@ -57,11 +57,13 @@
 {% else %}
     <!-- No match -->
     {% if show_admin_panel and active %}
-        <form method="post" 
-            hx-post="{% url 'generate_match' uuid=session.uuid court_id=court.id %}"
+        {% if upcoming_match_id %}
+        <form method="post"
+            hx-post="{% url 'add_upcoming_match_to_court' uuid=session.uuid court_id=court.id upcoming_match_id=upcoming_match_id %}"
             hx-swap="none">
-            <button type="submit" class="primary-button mt-4">Generate Match</button>
+            <button type="submit" class="primary-button mt-4">Add Upcoming Match</button>
         </form>
+        {% endif %}
 
         <form method="post" 
             hx-post="{% url 'release_court' uuid=session.uuid court_id=court.id %}"
