@@ -1,5 +1,5 @@
 
-from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession, UpcomingMatch
+from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession, UpcomingMatch, Pair
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
 from ..services.openskill import score_match
@@ -32,7 +32,8 @@ def add_player_to_session(request, uuid):
 
     response = HttpResponse("ok")
     response["HX-Trigger"] = json.dumps({
-        "players_update": True
+        "players_update": True,
+        "pairs_update": True,
     })
     return response
 
@@ -49,7 +50,8 @@ def pause_player_in_session(request, uuid, player_id):
 
     response = HttpResponse("ok")
     response["HX-Trigger"] = json.dumps({
-        "players_update": True
+        "players_update": True,
+        "pairs_update": True,
     })
     return response
 
@@ -426,4 +428,63 @@ def delete_upcoming_matches(request, uuid):
     response["HX-Trigger"] = json.dumps({
         f"upcoming_match_update": True,
          "all_courts_update": True,})
+    return response
+
+
+
+@user_passes_test(is_admin)
+def add_pair(request, uuid):
+    session = get_object_or_404(Session, uuid=uuid)
+
+    # Use the correct model name (Pair, not Pairs)
+    existing_pairs = Pair.objects.filter(session=session)
+
+    p1_s_id = request.POST.get('p1_s_id')
+    p2_s_id = request.POST.get('p2_s_id')
+
+
+    if p1_s_id == p2_s_id:
+        return HttpResponse(f"User cannot pair with himself", status=400)
+    # Collect all player session IDs already in a pair for this session
+    used_player_ids = set()
+    for pair in existing_pairs:
+        used_player_ids.add(pair.player1_s_id)   # more efficient than .id
+        used_player_ids.add(pair.player2_s_id)
+
+    for p_s_id in [p1_s_id, p2_s_id]:
+        if p_s_id in used_player_ids:
+            return HttpResponse(f"Player {p_s_id} is already paired in this session", status=400)
+        
+        if not PlayerSession.objects.filter(id=p_s_id).exists():
+            return HttpResponse(f"PlayerSession {p_s_id} not found in session", status=400)
+
+    # Create the new pair
+    Pair.objects.create(
+        session=session,
+        player1_s_id=p1_s_id,      # Using _id is efficient
+        player2_s_id=p2_s_id,
+    )
+
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "pairs_update": True,
+    })
+    
+    return response
+
+
+
+@user_passes_test(is_admin)
+def delete_pair(request, uuid, pair_id):
+
+    # Try to find the pair in either order
+    pair = Pair.objects.filter(
+    ).filter(
+        id=pair_id,
+    ).delete()
+
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "pairs_update": True,
+    })
     return response

@@ -1,5 +1,5 @@
 from .permissions import is_admin
-from ..models import Player, PlayerSession, UpcomingMatch
+from ..models import Player, PlayerSession, UpcomingMatch, Pair
 
 from django.utils.safestring import mark_safe
 from django.shortcuts import get_object_or_404
@@ -101,6 +101,7 @@ def render_upcoming_match(request, session, upcoming_match):
         return {
             "session": session,
             "upcoming_match": False,
+            "show_admin_panel": is_admin(request.user),
         }
 
     upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
@@ -118,4 +119,27 @@ def render_upcoming_match(request, session, upcoming_match):
         "show_admin_panel": is_admin(request.user),
         "session": session,
         "value": upcoming_match.value,
+    }
+
+def render_pairs(session):
+    # Get all pairs for this session
+    pairs = Pair.objects.filter(session=session).select_related(
+        'player1_s__player', 
+        'player2_s__player'
+    )
+
+    # Get all PlayerSessions that are NOT yet in any pair
+    paired_ids = Pair.objects.filter(session=session).values_list(
+        'player1_s_id', 'player2_s_id', flat=False
+    )
+    paired_ids = {pid for pair in paired_ids for pid in pair}
+
+    player_sessions_not_paired = session.playersession_set.all().select_related('player').exclude(
+        id__in=paired_ids
+    ).filter(pause=False).order_by('player__name')
+
+    return {
+        'pairs': pairs,
+        'player_sessions_not_paired': player_sessions_not_paired,
+        'session': session,          # useful for URLs and context
     }

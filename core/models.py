@@ -21,15 +21,18 @@ class Player(models.Model):
     def format_name_gender(name, is_female):
         color_class = "text-pink-300 font-medium" if is_female else "text-blue-300 font-medium"
         return f'<span class="{color_class}">{name}</span>'
+    
+
+    def name_coloured(self):
+        return self.format_name_gender(self.name, self.gender == "F")
 
     def get_name_with_mu(self):
         
-        return mark_safe(f"{self.format_name_gender(self.name, self.gender == "F")}<sup>{self.mu}</sup>")
+        return mark_safe(f"{self.name_coloured()}<sup>{self.mu}</sup>")
     
 
     def get_name(self):
-        
-        return mark_safe(f"{self.format_name_gender(self.name, self.gender == "F")}")
+        return mark_safe(self.name_coloured())
     
     
 
@@ -132,3 +135,23 @@ class UpcomingMatch(models.Model):
     # should be id1,id2,id3,id4 (first 2 should be team1, last2 should be team2)
     player_ids = models.CharField(max_length=100)
     
+
+
+class Pair(models.Model):
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="pairs")
+    
+    player1_s = models.ForeignKey(
+        PlayerSession, 
+        on_delete=models.CASCADE, 
+        related_name="pair_as_player1"
+    )
+    player2_s = models.ForeignKey(
+        PlayerSession, 
+        on_delete=models.CASCADE, 
+        related_name="pair_as_player2"
+    )
+
+
+    @property
+    def get_name(self):
+        return mark_safe(f"{self.player1_s.player.name_coloured()} & {self.player2_s.player.name_coloured()}")
