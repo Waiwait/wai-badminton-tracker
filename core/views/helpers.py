@@ -187,14 +187,6 @@ def generate_match(request, uuid, court_id):
     })
     
     matches_ranked = matchmaking(players_waiting=players_waiting, session=session)
-
-    for matches in matches_ranked[:5]:
-        str_print = "[INFO] "
-        for teams in matches["teams"]:
-            for player in teams:
-               str_print += f"{player['name']},"
-        str_print += f": {matches["score"]}"
-        print(str_print)
     match_chosen = matches_ranked[0]
 
     
@@ -292,8 +284,6 @@ def generate_upcoming_match(request, uuid):
 
     session = get_object_or_404(Session, uuid=uuid)
 
-    print("yo")
-
 
     # All players registered in this session
     session_players = Player.objects.filter(
@@ -336,7 +326,6 @@ def generate_upcoming_match(request, uuid):
     response["HX-Trigger"] = json.dumps({
         f"upcoming_match_update": True,
          "all_courts_update": True,})
-    print(response["HX-Trigger"])
     return response
 
 
@@ -379,7 +368,6 @@ def add_upcoming_match_to_court(request, uuid, court_id, upcoming_match_id):
             response = HttpResponse("Missing players to generate this game. Deleting Game.")
             response["HX-Trigger"] = json.dumps({
                 f"upcoming_match_update": True})
-            print(response["HX-Trigger"])
             return response
 
 
@@ -427,7 +415,6 @@ def delete_upcoming_match(request, uuid, upcoming_match_id):
     response["HX-Trigger"] = json.dumps({
         f"upcoming_match_update": True,
        "all_courts_update": True,})
-    print(response["HX-Trigger"])
     return response
 
 
@@ -439,5 +426,4 @@ def delete_upcoming_matches(request, uuid):
     response["HX-Trigger"] = json.dumps({
         f"upcoming_match_update": True,
          "all_courts_update": True,})
-    print(response["HX-Trigger"])
     return response
