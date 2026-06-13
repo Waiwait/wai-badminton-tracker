@@ -9,9 +9,9 @@
             {% if show_admin_panel %}
                 hx-trigger="load, every 60s, court_board_update from:body"
             {% else %}
-                hx-trigger="load, every 10s"
+                hx-trigger="load, every 20s"
             {% endif %}
-            hx-swap="innerHTML"
+            hx-swap="innerHTML transition:true"
         >
             Loading courts...
         </div>            
@@ -29,7 +29,7 @@
             {% if show_admin_panel %}
                 hx-trigger="load, every 60s, history_update from:body"
             {% else %}
-                hx-trigger="load, every 10s"
+                hx-trigger="load, every 20s"
             {% endif %}
             hx-swap="innerHTML"
         >

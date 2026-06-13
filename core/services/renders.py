@@ -1,14 +1,18 @@
 from .permissions import is_admin
 from ..models import Player, PlayerSession, UpcomingMatch, Pair
 
+import os
+
+from django.utils import timezone
 from django.utils.safestring import mark_safe
-from django.shortcuts import get_object_or_404
+
 
 def render_courts(request, session):
 
     courts = session.courts.all().order_by("number")
 
     return {
+        "club_name": os.environ.get('APP_CLUB_NAME'),
         "session": session,
         "court_ids": [court.id for court in courts],
         "show_admin_panel": is_admin(request.user),
@@ -75,6 +79,13 @@ def render_single_court(request, session, court):
     team1 = []
     team2 = []
 
+    show_timer = False
+    elapsed_seconds = 0
+
+    if match and match.started_at:
+        elapsed_seconds = int((timezone.now() - match.started_at).total_seconds())
+        show_timer = elapsed_seconds < 20 * 60
+
     if match: 
         for team in match.teams.all():
             if team.team_number == 1:
@@ -91,6 +102,8 @@ def render_single_court(request, session, court):
         'active': court.active,
         'show_admin_panel': is_admin(request.user),
         "upcoming_match_id": upcoming_match.id if upcoming_match else None,
+        'show_timer': show_timer,
+        'elapsed_seconds': elapsed_seconds,
     }
 
 

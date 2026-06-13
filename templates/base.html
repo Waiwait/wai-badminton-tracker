@@ -31,5 +31,46 @@
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
         });
         </script>
+
+   <script>
+        function initMatchTimers(root = document) {
+            const timers = root.querySelectorAll("[data-match-timer]");
+
+            timers.forEach(timerEl => {
+
+                if (timerEl._interval) {
+                    clearInterval(timerEl._interval);
+                }
+
+                let seconds = parseInt(timerEl.dataset.seconds || "0");
+
+                function format(sec) {
+                    const m = Math.floor(sec / 60);
+                    const s = sec % 60;
+
+                    return (
+                        String(m).padStart(2, "0") + ":" +
+                        String(s).padStart(2, "0")
+                    );
+                }
+
+                function tick() {
+                    seconds++;
+                    timerEl.innerText = format(seconds);
+                }
+
+                // initial render (important!)
+                timerEl.innerText = format(seconds);
+
+                timerEl._interval = setInterval(tick, 1000);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => initMatchTimers());
+
+        document.body.addEventListener("htmx:afterSwap", (e) => {
+            initMatchTimers(e.target);
+        });
+        </script>
 </body>
 </html>

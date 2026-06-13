@@ -1,7 +1,39 @@
- <strong class="mb-2">Court {{ court.number }}</strong>
+<div class="relative">
+
+<div class="grid grid-cols-7 items-center mb-2 w-full">
+
+    <!-- Left (empty balance space) -->
+    <div></div>
+
+    <div></div>
+
+    <div></div>
+
+    <!-- Center -->
+    <strong class="text-lg font-semibold text-center">
+        {{ court.number }}
+    </strong>
+
+
+    <div></div>
+
+    <div></div>
+
+    <!-- Right -->
+    <div class="flex justify-end">
+        {% if show_timer %}
+        <div data-match-timer data-seconds="{{ elapsed_seconds }}"
+            class="text-sm font-mono px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+            00:00
+        </div>
+        {% endif %}
+    </div>
+
+</div>
 
 {% if match %}
 <!-- Active Match - Show scoring form -->
+
 <div class="grid grid-cols-2 gap-4 w-full mb-2">
     <div class="grid grid-cols-1">
         {% if show_admin_panel %}
@@ -78,3 +110,4 @@
 
     {% endif %}
 {% endif %}
+</div>

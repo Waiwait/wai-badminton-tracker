@@ -27,6 +27,7 @@ urlpatterns = [
     # admin
     path("session/<uuid:uuid>/admin/players/", admin.admin_players, name="admin_players"),
     path("session/<uuid:uuid>/admin/pairs/", admin.admin_pairs, name="admin_pairs"),
+    path("session/<uuid:uuid>/admin/new-player/", admin.new_player, name="admin_new_player"),
 
     path(
         "session/<uuid:uuid>/add-player-to-session/",
@@ -92,7 +93,12 @@ urlpatterns = [
         helpers.delete_pair,
         name="delete_pair",
     ),
-
+    
+    path(
+        "session/<uuid:uuid>/add-new-player/",
+        helpers.add_new_player,
+        name="add_new_player",
+    ),
 
     path('import-players/', import_players.load_players_page, name='import-players'),
 ]

@@ -7,6 +7,7 @@ from ..services.matchmaking import matchmaking
 from ..services.match_state import is_cancelled_game
 
 import json
+from decimal import Decimal, InvalidOperation
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -486,5 +487,41 @@ def delete_pair(request, uuid, pair_id):
     response = HttpResponse("ok")
     response["HX-Trigger"] = json.dumps({
         "pairs_update": True,
+    })
+    return response
+
+
+
+@user_passes_test(is_admin)
+def add_new_player(request, uuid):
+
+    p_name = request.POST.get('player_name')
+
+    if Player.objects.filter(name=p_name).exists():
+        return HttpResponse("Player name already exists", status=400)
+
+    if not p_name:
+        return HttpResponse("Missing name", status=400)
+
+    p_gender =  request.POST.get('player_gender')
+
+    try:
+        p_mu = Decimal(request.POST.get('player_strength'))
+    except (TypeError, InvalidOperation):
+        return HttpResponse("Invalid strength", status=400)
+
+    session = get_object_or_404(Session, uuid=uuid)
+
+    player = Player.objects.create(
+        name=p_name, gender=p_gender, mu=p_mu
+    )
+
+    PlayerSession.objects.create(session=session, player=player)
+
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True,
+        "pairs_update": True,
+        "new_player_update": True,
     })
     return response

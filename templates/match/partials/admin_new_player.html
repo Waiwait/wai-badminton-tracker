@@ -1,0 +1,44 @@
+<h2 class="text-center font-bold mb-4">New Player</h2>
+
+<form method="post"
+      hx-post="{% url 'add_new_player' uuid=session.uuid %}"
+      hx-swap="none"
+      class="w-full space-y-4">
+
+    {% csrf_token %}
+
+    <!-- Player Name -->
+    <div>
+        <label class="block text-sm font-medium mb-1">Player Name</label>
+        <input type="text"
+               name="player_name"
+               class="w-full dark-text p-2 border rounded-sm"
+               required>
+    </div>
+
+    <!-- Gender -->
+    <div>
+        <label class="block text-sm font-medium mb-1">Gender</label>
+        <select name="player_gender"
+                class="w-full dark-text p-2 border rounded-sm"
+                required>
+            <option value="">Select Gender</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select>
+    </div>
+
+    <!-- Strength (mu) -->
+    <div>
+        <label class="block text-sm font-medium mb-1">Strength (μ) - Relative to Other Players</label>
+        <input type="number"
+               name="player_strength"
+               class="w-full dark-text p-2 border rounded-sm"
+               required>
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" class="primary-button w-full mt-4">
+        Add Player
+    </button>
+</form>

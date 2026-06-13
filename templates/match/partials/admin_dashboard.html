@@ -1,7 +1,15 @@
 
 <h2 class="text-center text-2xl font-bold mb-4">Admin</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+        <div id="admin-players" 
+            hx-get="{% url 'admin_players' session.uuid %}"
+            hx-trigger="load, every 60s, players_update from:body"
+            hx-swap="innerHTML">
+            <!-- Initially empty or loading message -->
+            Loading players...
+        </div>
 
         <div id="admin-pairs" 
             hx-get="{% url 'admin_pairs' session.uuid %}"
@@ -11,11 +19,14 @@
             Loading pairs...
         </div>
 
-        <div id="admin-players" 
-            hx-get="{% url 'admin_players' session.uuid %}"
-            hx-trigger="load, every 60s, players_update from:body"
+
+        <div id="admin-new-player" 
+            hx-get="{% url 'admin_new_player' session.uuid %}"
+            hx-trigger="load,  new_player_update from:body"
             hx-swap="innerHTML">
             <!-- Initially empty or loading message -->
-            Loading players...
+            Loading new player...
         </div>
+
+        
     </div>

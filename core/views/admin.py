@@ -20,3 +20,10 @@ def admin_pairs(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
 
     return render(request, "match/partials/admin_pairs.html", render_pairs(session))
+
+
+@user_passes_test(is_admin)
+def new_player(request, uuid):
+    session = get_object_or_404(Session, uuid=uuid)
+
+    return render(request, "match/partials/admin_new_player.html", {"session": session})

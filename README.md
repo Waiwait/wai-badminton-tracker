@@ -4,6 +4,11 @@ This is a lightweight web application designed to manage badminton sessions. Adm
 
 It is built using **HTML**, **Django**, and **HTMX**.
 
+Licensed under the **PolyForm Noncommercial License 1.0.0**.  
+See [LICENSE](LICENSE) for details.
+
+**This software is for non-commercial use only.**
+
 ---
 
 # Getting Started

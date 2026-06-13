@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 
 class Player(models.Model):
     name = models.CharField(max_length=100)
@@ -79,6 +80,7 @@ class Match(models.Model):
         on_delete=models.CASCADE, 
         related_name="matches"
     )
+    started_at = models.DateTimeField(default=timezone.now, null=True)
     finished = models.BooleanField(default=False)
 
     def __str__(self):
