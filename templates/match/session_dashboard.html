@@ -2,6 +2,8 @@
 
 {% block content %}
 
+{% if show_admin_panel or session.active %}
+
 <div id="session-dashboard" class="container mx-auto p-4">
     <section>
         <div
@@ -38,4 +40,11 @@
     </section>
 
 </div>
+
+{% else %}
+
+<p class="text-gray-500 italic"> {{ session.venue }} Session @ {{ session.date }} no longer active</p>
+
+{% endif %}
+
 {% endblock %}
