@@ -28,17 +28,24 @@
 
 {% if show_admin_panel %}
     Value: {{ value }}
-    <form method="post"
-        hx-post="{% url 'delete_upcoming_match' uuid=session.uuid upcoming_match_id=upcoming_match_id %}"
-        hx-swap="none">
-        <button type="submit" class="primary-button mt-4">Regenerate</button>
-    </form>
 
-    <form method="post"
-        hx-post="{% url 'delete_upcoming_matches' uuid=session.uuid %}"
-        hx-swap="none">
-        <button type="submit" class="primary-button mt-4">Delete</button>
-    </form>
+    <div class="flex gap-2 mt-4 justify-center">
+        <form method="post"
+            hx-post="{% url 'delete_upcoming_match' uuid=session.uuid upcoming_match_id=upcoming_match_id %}"
+            hx-swap="none">
+            <button type="submit" class="primary-button">
+                Regenerate
+            </button>
+        </form>
+
+        <form method="post"
+            hx-post="{% url 'delete_upcoming_matches' uuid=session.uuid %}"
+            hx-swap="none">
+            <button type="submit" class="primary-button">
+                Delete
+            </button>
+        </form>
+    </div>
 {% endif %}
 {% else %}
 
