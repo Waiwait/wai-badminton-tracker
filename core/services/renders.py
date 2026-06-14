@@ -108,8 +108,6 @@ def render_single_court(request, session, court):
 
 
 def render_upcoming_match(request, session, upcoming_match):
-
-
     if not upcoming_match:
         return {
             "session": session,
@@ -121,6 +119,16 @@ def render_upcoming_match(request, session, upcoming_match):
 
     players = Player.objects.filter(id__in=upcoming_player_ids)
     players_map = {p.id: p for p in players}
+
+    missing_ids = [pid for pid in upcoming_player_ids if pid not in players_map]
+
+    if missing_ids:
+        
+        return {
+            "session": session,
+            "upcoming_match": False,
+            "show_admin_panel": is_admin(request.user),
+        }
 
     return {
         "player1": players_map[upcoming_player_ids[0]],
@@ -154,5 +162,29 @@ def render_pairs(session):
     return {
         'pairs': pairs,
         'player_sessions_not_paired': player_sessions_not_paired,
-        'session': session,          # useful for URLs and context
+        'session': session,
+    }
+
+
+def render_switch_players(session):
+
+    session_players = Player.objects.filter(
+        playersession__session=session
+    ).distinct()
+
+    in_match_players = Player.objects.filter(
+        matchparticipant__match_team__match__court__session=session,
+        matchparticipant__match_team__match__finished=False
+    ).distinct()
+
+    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+    playersession__pause=False,
+    playersession__session=session,
+)
+
+
+    return {
+        'in_match_players': in_match_players,
+        'players_waiting': players_waiting,
+        'session': session, 
     }

@@ -1,4 +1,3 @@
-
 from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession, UpcomingMatch, Pair
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
@@ -13,7 +12,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
-from django.db import models
+from django.db import models, transaction
+
 
 
 @user_passes_test(is_admin)
@@ -35,6 +35,7 @@ def add_player_to_session(request, uuid):
     response["HX-Trigger"] = json.dumps({
         "players_update": True,
         "pairs_update": True,
+        "switch_players_update": True,
     })
     return response
 
@@ -53,6 +54,7 @@ def pause_player_in_session(request, uuid, player_id):
     response["HX-Trigger"] = json.dumps({
         "players_update": True,
         "pairs_update": True,
+        "switch_players_update": True,
     })
     return response
 
@@ -142,86 +144,7 @@ def finish_match(request, uuid, match_id):
         "players_update": True,
         f"court_{match.court.id}_update": True,
         "history_update": True,
-    })
-    return response
-
-@user_passes_test(is_admin)
-def generate_match(request, uuid, court_id):
-    session = get_object_or_404(Session, uuid=uuid)
-    
-    court = get_object_or_404(
-        Court, 
-        id=court_id, 
-        session=session
-    )
-
-    existing_match = court.matches.filter(finished=False).first()
-    
-    if existing_match:
-        existing_match.finished = True
-        existing_match.save()
-        messages.warning(
-            request, 
-            f"Previous match on Court {court.number} was closed."
-        )
-
-    # All players registered in this session
-    session_players = Player.objects.filter(
-        playersession__session=session
-    ).distinct()
-
-    # Players currently in a match in this session
-    in_match_players = Player.objects.filter(
-        matchparticipant__match_team__match__court__session=session,
-        matchparticipant__match_team__match__finished=False
-    ).distinct()
-
-    players_waiting = session_players.exclude(id__in=in_match_players).filter(
-    playersession__pause=False,
-    playersession__session=session,
-)
-
-    # Need at least 4 players
-    if len(players_waiting) < 4:
-        messages.error(request, "Not enough players waiting (need at least 4)")
-        return render(request, "match/session_dashboard.html", {
-        "session": session,
-        "show_admin_panel": is_admin(request.user),
-    })
-    
-    matches_ranked = matchmaking(players_waiting=players_waiting, session=session)
-    match_chosen = matches_ranked[0]
-
-    
-    # Create new Match
-    match = Match.objects.create(court=court)
-
-    # Create two teams
-    team1 = MatchTeam.objects.create(match=match, team_number=1)
-    team2 = MatchTeam.objects.create(match=match, team_number=2)
-
-    def create_player(player_id, team):
-        player = Player.objects.get(id=player_id)
-        MatchParticipant.objects.create(
-            match_team=team,
-            player=player
-        )
-    # Assign 2 players to each team
-    create_player(match_chosen["teams"][0][0]["id"], team1)
-    create_player(match_chosen["teams"][0][1]["id"], team1)
-    create_player(match_chosen["teams"][1][0]["id"], team2)
-    create_player(match_chosen["teams"][1][1]["id"], team2)
-
-
-    messages.success(
-        request, 
-        f"New match started on Court {court.number}!"
-    )
-
-    response = HttpResponse("ok")
-    response["HX-Trigger"] = json.dumps({
-        "players_update": True,
-        f"court_{match.court.id}_update": True
+        "switch_players_update": True,
     })
     return response
 
@@ -406,6 +329,7 @@ def add_upcoming_match_to_court(request, uuid, court_id, upcoming_match_id):
         "players_update": True,
         "upcoming_match_update": True,
         f"all_courts_update": True,
+        "switch_players_update": True,
     })
     return response
 
@@ -523,5 +447,50 @@ def add_new_player(request, uuid):
         "players_update": True,
         "pairs_update": True,
         "new_player_update": True,
+        "switch_players_update": True,
+    })
+    return response
+
+
+@user_passes_test(is_admin)
+def switch_players(request, uuid):
+    p1_id = request.POST.get("player1_id")
+    p2_id = request.POST.get("player2_id")
+
+    if not p1_id or not p2_id:
+        return HttpResponse("Missing players", status=400)
+
+    if p1_id == p2_id:
+        return HttpResponse("Cannot switch same user", status=400)
+
+    session = get_object_or_404(Session, uuid=uuid)
+
+    player_1 = get_object_or_404(Player, id=p1_id)
+    player_2 = get_object_or_404(Player, id=p2_id)
+
+    with transaction.atomic():
+
+        mp1 = get_object_or_404(
+            MatchParticipant,
+            player=player_1,
+            match_team__match__court__session=session
+        )
+
+        # safety: prevent duplicate in same team
+        if MatchParticipant.objects.filter(
+            match_team=mp1.match_team,
+            player=player_2
+        ).exists():
+            return HttpResponse("Player already in match", status=400)
+
+        # REPLACE player in match
+        mp1.player = player_2
+        mp1.save()
+
+    response = HttpResponse("ok")
+    response["HX-Trigger"] = json.dumps({
+        "players_update": True,
+        "switch_players_update": True,
+        "all_courts_update": True
     })
     return response

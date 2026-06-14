@@ -1,0 +1,45 @@
+<h2 class="text-center font-bold mb-4">Switch Players</h2>
+
+<!-- Add New Pair Form -->
+<form method="post" 
+      hx-post="{% url 'switch_players' uuid=session.uuid %}" 
+      hx-swap="none"
+      class="w-full">
+
+    <div class="flex justify-around gap-6">
+        <!-- Player 1 -->
+        <div class="flex-1">
+            <label class="block text-sm font-medium mb-1">Player 1</label>
+            <select name="player1_id" 
+                    class="w-full dark-text p-2 border rounded-sm" 
+                    required>
+                <option value="">Player 1</option>
+                {% for p1 in in_match_players %}
+                    <option value="{{ p1.id }}">
+                        {{ p1.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Player 2 -->
+        <div class="flex-1">
+            <label class="block text-sm font-medium mb-1">Player 2</label>
+            <select name="player2_id" 
+                    class="w-full dark-text p-2 border rounded-sm" 
+                    required>
+                <option value="">Player 2</option>
+                {% for p2 in players_waiting %}
+                    <option value="{{ p2.id }}">
+                        {{ p2.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" class="primary-button mt-6 w-full">
+        Switch Players
+    </button>
+</form>
+</form>

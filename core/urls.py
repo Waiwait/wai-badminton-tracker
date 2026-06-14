@@ -28,6 +28,7 @@ urlpatterns = [
     path("session/<uuid:uuid>/admin/players/", admin.admin_players, name="admin_players"),
     path("session/<uuid:uuid>/admin/pairs/", admin.admin_pairs, name="admin_pairs"),
     path("session/<uuid:uuid>/admin/new-player/", admin.new_player, name="admin_new_player"),
+    path("session/<uuid:uuid>/admin/switch-players/", admin.switch_players, name="admin_switch_players"),
 
     path(
         "session/<uuid:uuid>/add-player-to-session/",
@@ -98,6 +99,12 @@ urlpatterns = [
         "session/<uuid:uuid>/add-new-player/",
         helpers.add_new_player,
         name="add_new_player",
+    ),
+
+    path(
+        "session/<uuid:uuid>/switch-players/",
+        helpers.switch_players,
+        name="switch_players",
     ),
 
     path('import-players/', import_players.load_players_page, name='import-players'),

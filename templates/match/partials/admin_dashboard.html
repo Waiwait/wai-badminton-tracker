@@ -1,7 +1,7 @@
 
 <h2 class="text-center text-2xl font-bold mb-4">Admin</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
         <div id="admin-players" 
             class="p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80"
@@ -19,6 +19,15 @@
             hx-swap="innerHTML">
             <!-- Initially empty or loading message -->
             Loading pairs...
+        </div>
+
+        <div id="admin-switch-players"
+            class="p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80"
+            hx-get="{% url 'admin_switch_players' session.uuid %}"
+            hx-trigger="load,  switch_players_update from:body"
+            hx-swap="innerHTML">
+            <!-- Initially empty or loading message -->
+            Loading switch players...
         </div>
 
 
