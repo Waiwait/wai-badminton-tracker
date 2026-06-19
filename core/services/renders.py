@@ -178,9 +178,9 @@ def render_switch_players(session):
     ).distinct()
 
     players_waiting = session_players.exclude(id__in=in_match_players).filter(
-    playersession__pause=False,
-    playersession__session=session,
-)
+        playersession__pause=False,
+        playersession__session=session,
+    )
 
 
     return {

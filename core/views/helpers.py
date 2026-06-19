@@ -4,6 +4,7 @@ from ..services.session_membership import add_player, remove_player
 from ..services.openskill import score_match
 from ..services.matchmaking import matchmaking
 from ..services.match_state import is_cancelled_game
+from ..services.sse import notify_session
 
 import json
 from decimal import Decimal, InvalidOperation
@@ -159,6 +160,7 @@ def add_court(request, uuid):
     if court:
         court.active = True
         court.save()
+
     else:
         # 2. Otherwise create next court number
         last_number = session.courts.aggregate(models.Max("number"))["number__max"] or 0
@@ -473,7 +475,8 @@ def switch_players(request, uuid):
         mp1 = get_object_or_404(
             MatchParticipant,
             player=player_1,
-            match_team__match__court__session=session
+            match_team__match__court__session=session,
+            match_team__match__finished=False
         )
 
         # safety: prevent duplicate in same team

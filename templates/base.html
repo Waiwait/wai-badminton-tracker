@@ -13,9 +13,6 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon/favicon-16x16.png' %}">
     <link rel="manifest" href="{% static 'images/favicon/site.webmanifest' %}">
 
-    <!-- HTMX (required for hx-get, hx-trigger, etc.) -->
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-
     <title>{% block title %}Match App{% endblock %}</title>
 </head>
 
@@ -32,7 +29,13 @@
         });
         </script>
 
-   <script>
+    <!-- HTMX (required for hx-get, hx-trigger, etc.) -->
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+
+    <script src="{% static 'js/index.js' %}"></script>
+
+    <script>
         function initMatchTimers(root = document) {
             const timers = root.querySelectorAll("[data-match-timer]");
 

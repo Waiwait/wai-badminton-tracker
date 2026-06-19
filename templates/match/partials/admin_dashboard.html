@@ -4,7 +4,7 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
         <div id="admin-players" 
-            class="p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80"
+            class="p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80"
             hx-get="{% url 'admin_players' session.uuid %}"
             hx-trigger="load, every 60s, players_update from:body"
             hx-swap="innerHTML">
@@ -13,7 +13,7 @@
         </div>
 
         <div id="admin-pairs"
-            class="p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80"
+            class="p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80"
             hx-get="{% url 'admin_pairs' session.uuid %}"
             hx-trigger="load, every 60s, pairs_update from:body"
             hx-swap="innerHTML">
@@ -22,7 +22,7 @@
         </div>
 
         <div id="admin-switch-players"
-            class="p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80"
+            class="p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80"
             hx-get="{% url 'admin_switch_players' session.uuid %}"
             hx-trigger="load,  switch_players_update from:body"
             hx-swap="innerHTML">
@@ -32,7 +32,7 @@
 
 
         <div id="admin-new-player"
-            class="p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80"
+            class="p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80"
             hx-get="{% url 'admin_new_player' session.uuid %}"
             hx-trigger="load,  new_player_update from:body"
             hx-swap="innerHTML">
