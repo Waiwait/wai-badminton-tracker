@@ -1,26 +1,5 @@
 <h2 class="text-center font-bold mb-4">Pairs</h2>
 
-<div class="space-y-2 mb-6">
-    {% for pair in pairs %}
-        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
-            <div class="font-medium">
-                {{ pair.get_name }}
-            </div>
-            
-            <!-- Delete Button -->
-            <form method="post" 
-                  hx-post="{% url 'delete_pair' uuid=session.uuid pair_id=pair.id %}" 
-                  hx-swap="none"
-                {% csrf_token %}
-                <button type="submit" 
-                        class="text-red-600 hover:text-red-700 text-sm font-medium">
-                    Delete
-                </button>
-            </form>
-        </div>
-    {% endfor %}
-</div>
-
 <!-- Add New Pair Form -->
 <form method="post" 
       hx-post="{% url 'add_pair' uuid=session.uuid %}" 
@@ -59,8 +38,28 @@
         </div>
     </div>
 
-    <button type="submit" class="primary-button mt-6 w-full">
+    <button type="submit" class="primary-button mt-4 mb-6 w-full">
         Add Pair
     </button>
 </form>
-</form>
+
+<div class="space-y-2">
+    {% for pair in pairs %}
+        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+            <div class="font-medium">
+                {{ pair.get_name }}
+            </div>
+            
+            <!-- Delete Button -->
+            <form method="post" 
+                  hx-post="{% url 'delete_pair' uuid=session.uuid pair_id=pair.id %}" 
+                  hx-swap="none">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="text-red-600 hover:text-red-700 text-sm font-medium">
+                    Delete
+                </button>
+            </form>
+        </div>
+    {% endfor %}
+</div>

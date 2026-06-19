@@ -7,6 +7,40 @@ from ..services.match_state import is_cancelled_game
 from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 
+import json
+from django.http import StreamingHttpResponse
+from ..services.sse import subscribe, unsubscribe
+
+
+def session_events(request, uuid):
+
+    q = subscribe(uuid)
+
+    def event_stream():
+        try:
+            while True:
+                event = q.get()
+
+                yield (
+                    f"event: update\n"
+                    f"data: {json.dumps(event)}\n\n"
+                )
+
+        except GeneratorExit:
+            pass
+
+        finally:
+            unsubscribe(uuid, q)
+
+    response = StreamingHttpResponse(
+        event_stream(),
+        content_type="text/event-stream",
+    )
+
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
+
+    return response
 
 def session_detail(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)

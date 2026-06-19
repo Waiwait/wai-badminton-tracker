@@ -16,13 +16,15 @@ urlpatterns = [
     ),
 
     path('session/<uuid:uuid>/court/<int:court_id>/', 
-     dashboard.single_court, 
-     name='single_court'),
+        dashboard.single_court, 
+        name='single_court'
+    ),
 
 
     path('session/<uuid:uuid>/upcoming-match/', 
-     dashboard.upcoming_match, 
-     name='upcoming_match'),
+        dashboard.upcoming_match, 
+        name='upcoming_match'
+    ),
 
     # admin
     path("session/<uuid:uuid>/admin/players/", admin.admin_players, name="admin_players"),

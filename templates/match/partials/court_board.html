@@ -6,7 +6,7 @@
         
         <div 
             id="court-{{ court_id }}"
-            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80 text-center"
+            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80 text-center"
             hx-get="{% url 'single_court' uuid=session.uuid court_id=court_id %}"
             hx-trigger="load, court_{{ court_id }}_update  from:body, all_courts_update from:body"
             hx-swap="innerHTML">
@@ -33,7 +33,7 @@
         {% endif %}
         <div 
             id="upcoming-match"
-            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-lg shadow border border-[#203A43]/80  text-center mt-4"
+            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80  text-center mt-4"
             hx-get="{% url 'upcoming_match' uuid=session.uuid %}"
             hx-trigger="load, upcoming_match_update from:body"
             hx-swap="innerHTML">

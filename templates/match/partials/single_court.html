@@ -62,7 +62,7 @@
     hx-swap="none"
     class="w-full">
 
-    <div class="flex justify-around">
+    <div class="flex justify-around score-inputs">
         <input type="number" 
             name="team1_score" 
             min="0" 
@@ -82,7 +82,12 @@
             required>                
     </div>
 
-    <button type="submit" class="primary-button mt-4">Finish Match</button>
+    <button type="button" class="primary-button mt-4 finish-match-btn">Finish Match</button>
+    <div class="confirm-score invisible">
+        <div class="text-sm mt-2 score-text">Submit the score 0 - 0</div>
+        <button type="submit" class="primary-button mt-4">Submit Score</button>
+        <button type="button" class="primary-button mt-4 cancel-score-btn">Cancel</button>
+    </div>
 </form>
 {% endif %}
 
