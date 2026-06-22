@@ -14,7 +14,7 @@
 |---|---|---|---|
 | Court management | ✅ | ✅ | ✅ |
 | Automatic player matching | ✅ | ✅ | ✅ |
-| Transparent Matchmaking Algorithm | ❌ | ⚠️ | ✅ |
+| Transparent matchmaking algorithm | ❌ | ⚠️ | ✅ |
 | Adjustable matchmaking weights | ❌ | ✅ | ⚠️ |
 | Switch players in match | ✅ | ❌ | ✅ |
 | Non-admins can view session | ❌ | ❌ | ✅ |
