@@ -1,7 +1,7 @@
 # Wai-Badminton-Tracker
 
 <p align="center">
-WBT is a lightweight web application focused primarily on managing sessions for your badminton club via an intuitive powerful central dashboard. Built primarily using <strong>HTML</strong>, <strong>Django</strong>, and <strong>HTMX</strong>.
+<strong>WBT</strong> is a lightweight web application focused primarily on managing sessions for your badminton club via an intuitive powerful central dashboard. Built primarily using <strong>HTML</strong>, <strong>Django</strong>, and <strong>HTMX</strong>.
 
 
 <img src="./images/wai-badminton-tracker.png" alt="wai-badminton-tracker">
@@ -10,10 +10,11 @@ WBT is a lightweight web application focused primarily on managing sessions for 
 
 
 
-| Feature | eBadders | SuperBadders | WBT |
+| Feature | eBadders | SuperBadders | **WBT** |
 |---|---|---|---|
 | Court management | ✅ | ✅ | ✅ |
 | Automatic player matching | ✅ | ✅ | ✅ |
+| Transparent Matchmaking Algorithm | ❌ | ⚠️ | ✅ |
 | Adjustable matchmaking weights | ❌ | ✅ | ⚠️ |
 | Switch players in match | ✅ | ❌ | ✅ |
 | Non-admins can view session | ❌ | ❌ | ✅ |
@@ -25,6 +26,7 @@ WBT is a lightweight web application focused primarily on managing sessions for 
 | Modern web interface | ✅ | ❌ | ✅ |
 | Session summary | ✅ | ❌ | TBA |
 | Control over your own data | ❌ | ✅ | ✅ |
+| Import from other systems | ❌ | ❌ | ✅ |
 | **Open Source** | ❌ | ❌ | ✅ |
 
 
