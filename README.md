@@ -19,7 +19,7 @@
 | Switch players in match | ✅ | ❌ | ✅ |
 | Non-admins can view session | ❌ | ❌ | ✅ |
 | Adjust player strength | ❌ | ⚠️ | ✅ |
-| Player pairing system | ✅ | ⚠️ | ✅ |
+| Allow player pairings | ✅ | ⚠️ | ✅ |
 | Multiple device support | ✅ | ❌ | ✅ |
 | Offline mode | ❌ | ⚠️ | ❌ |
 | Handles session gender imbalance | ❌ | ✅ | ✅ |
