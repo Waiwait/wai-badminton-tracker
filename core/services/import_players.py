@@ -20,7 +20,7 @@ EBADDERS_RANK_TO_MU = {
     "E": 10.0,
 }
 
-EBADDERS_FEMALE_ADJUSTMENT = 2.5
+EBADDERS_FEMALE_ADJUSTMENT = 3.75
 
 
 def load_user_data_ebadders(html: str):
