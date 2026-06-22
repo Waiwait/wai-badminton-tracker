@@ -1,9 +1,8 @@
 # Wai-Badminton-Tracker
 
 <p align="center">
-WBT is a lightweight web application focused primarily on manage sessions for your badminton club. Built primarily using <strong>HTML</strong>, <strong>Django</strong>, and <strong>HTMX</strong>.
+WBT is a lightweight web application focused primarily on managing sessions for your badminton club via an intuitive powerful central dashboard. Built primarily using <strong>HTML</strong>, <strong>Django</strong>, and <strong>HTMX</strong>.
 
-<br>
 
 <img src="./images/wai-badminton-tracker.png" alt="wai-badminton-tracker">
 
@@ -15,15 +14,19 @@ WBT is a lightweight web application focused primarily on manage sessions for yo
 |---|---|---|---|
 | Court management | ✅ | ✅ | ✅ |
 | Automatic player matching | ✅ | ✅ | ✅ |
+| Adjustable matchmaking weights | ❌ | ✅ | ⚠️ |
+| Switch players in match | ✅ | ❌ | ✅ |
+| Non-admins can view session | ❌ | ❌ | ✅ |
 | Adjust player strength | ❌ | ⚠️ | ✅ |
 | Player pairing system | ✅ | ⚠️ | ✅ |
 | Multiple device support | ✅ | ❌ | ✅ |
-| No internet | ❌ | ⚠️ | ❌ |
-| Handles gender imbalance | ❌ | ✅ | ✅ |
+| Offline mode | ❌ | ⚠️ | ❌ |
+| Handles session gender imbalance | ❌ | ✅ | ✅ |
 | Modern web interface | ✅ | ❌ | ✅ |
+| Session summary | ✅ | ❌ | TBA |
 | Control over your own data | ❌ | ✅ | ✅ |
-| Session Summary | ✅ | ❌ | TBA |
-| **Free forever** | ⚠️ | ⚠️ | ✅ |
+| **Open Source** | ❌ | ❌ | ✅ |
+
 
 ## Getting Started
 
