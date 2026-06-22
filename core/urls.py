@@ -109,5 +109,6 @@ urlpatterns = [
         name="switch_players",
     ),
 
-    path('import-players/', import_players.load_players_page, name='import-players'),
+    path('import-players/ebadders/', import_players.load_players_page_ebadders, name='import-players-ebadders'),
+    path('import-players/superbadders/', import_players.load_players_page_superbadders, name='import-players-superbadders'),
 ]

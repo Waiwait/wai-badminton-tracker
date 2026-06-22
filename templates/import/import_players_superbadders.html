@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Load Players from SuperBadders</h1>
+
+<form method="post" action="{% url 'import-players-superbadders' %}">
+    {% csrf_token %}
+    <p><strong>Paste the full restore string below:</strong></p>
+    <textarea name="restore_string" rows="15" cols="120" 
+              style="width:100%; font-family:monospace; font-size:13px; color: black;">{{ request.POST.restore_string|default:'' }}</textarea>
+    <br><br>
+    <button type="submit" style="padding:12px 24px; font-size:16px;">Import Players</button>
+</form>
+
+<hr>
+
+{% if messages %}
+    {% for message in messages %}
+        <div style="padding: 10px; margin: 10px 0; border-radius: 5px; 
+                    {% if message.tags == 'success' %}background-color: #d4edda; color: #155724;{% endif %}
+                    {% if message.tags == 'error' %}background-color: #f8d7da; color: #721c24;{% endif %}">
+            <strong>{{ message }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if players %}
+    <h2>Processed {{ players|length }} Players ({{ created|default:0 }} imported)</h2>
+    <table border="1" cellpadding="6" style="border-collapse: collapse; width:100%;">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Mu (Strength)</th>
+                <th>Sigma</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for name, p in players.items %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.gender }}</td>
+            <td>{{ p.mu }}</td>
+            <td>{{ p.sigma }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% endblock %}
