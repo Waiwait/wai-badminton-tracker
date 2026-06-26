@@ -157,3 +157,53 @@ class Pair(models.Model):
     @property
     def get_name(self):
         return mark_safe(f"{self.player1_s.player.name_coloured()} & {self.player2_s.player.name_coloured()}")
+
+
+class MatchmakingConfig(models.Model):
+    """
+    Singleton config for matchmaking weights and parameters.
+    Admins can edit these from the Django admin panel.
+    """
+    # Weights
+    games_played_weight = models.PositiveIntegerField(default=25, help_text="Playtime fairness")
+    fairness_weight = models.PositiveIntegerField(default=10, help_text="Overall match skill fairness (win differential)")
+    played_with_weight = models.PositiveIntegerField(default=5, help_text="Teammate repeat penalty")
+    played_against_weight = models.PositiveIntegerField(default=3, help_text="Opponent repeat penalty")
+    gender_weight = models.PositiveIntegerField(default=2, help_text="Gender balance")
+    skill_difference_weight = models.PositiveIntegerField(default=3, help_text="Intra-team skill gap penalty")
+
+    # Optional: future parameters
+    skill_rel_gap_threshold_1 = models.FloatField(default=0.20, help_text="Excellent threshold (relative gap)")
+    skill_rel_gap_threshold_2 = models.FloatField(default=0.35, help_text="Acceptable threshold")
+    skill_rel_gap_threshold_3 = models.FloatField(default=0.50, help_text="Heavy penalty threshold")
+
+    class Meta:
+        verbose_name = "Matchmaking Configuration"
+        verbose_name_plural = "Matchmaking Configuration"
+
+    def __str__(self):
+        return "Matchmaking Configuration (Singleton)"
+
+    def clean(self):
+        if MatchmakingConfig.objects.exclude(pk=self.pk).exists():
+            raise Exception("Only one MatchmakingConfig record is allowed.")
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Force primary key to 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_config(cls):
+        """Safe singleton getter"""
+        config, created = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                'games_played_weight': 25,
+                'fairness_weight': 10,
+                'skill_difference_weight': 4,
+                'played_with_weight': 5,
+                'played_against_weight': 3,
+                'gender_weight': 2,
+            }
+        )
+        return config
