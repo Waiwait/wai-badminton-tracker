@@ -1,4 +1,4 @@
-from .views import dashboard, helpers, admin, import_players
+from .views import dashboard, helpers, admin, import_players, session_summary
 
 from django.urls import path
 
@@ -111,4 +111,6 @@ urlpatterns = [
 
     path('import-players/ebadders/', import_players.load_players_page_ebadders, name='import-players-ebadders'),
     path('import-players/superbadders/', import_players.load_players_page_superbadders, name='import-players-superbadders'),
+
+    path("session/<uuid:uuid>/summary/", session_summary.session_summary, name='session_summary'),
 ]

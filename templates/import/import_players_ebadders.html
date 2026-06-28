@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Load Players from Ebadders</h1>
+<h1>Load Players from Ebadders (WARNING: This will delete ALL existing players)</h1>
 
 <form method="post" action="{% url 'import-players-ebadders' %}" enctype="multipart/form-data">
     {% csrf_token %}
