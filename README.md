@@ -15,7 +15,7 @@
 | Court management | ✅ | ✅ | ✅ |
 | Automatic player matching | ✅ | ✅ | ✅ |
 | Transparent matchmaking algorithm | ❌ | ⚠️ | ✅ |
-| Adjustable matchmaking weights | ❌ | ✅ | ⚠️ |
+| Adjustable matchmaking weights | ❌ | ✅ | ✅ |
 | Switch players in match | ✅ | ❌ | ✅ |
 | Non-admins can view session | ❌ | ❌ | ✅ |
 | Adjust player strength | ❌ | ⚠️ | ✅ |
@@ -24,7 +24,7 @@
 | Offline mode | ❌ | ⚠️ | ❌ |
 | Handles session gender imbalance | ❌ | ✅ | ✅ |
 | Modern web interface | ✅ | ❌ | ✅ |
-| Session summary | ✅ | ❌ | TBA |
+| Session summary | ✅ | ❌ | ✅ |
 | Control over your own data | ❌ | ✅ | ✅ |
 | Import from other systems | ❌ | ❌ | ✅ |
 | **Open Source** | ❌ | ❌ | ✅ |

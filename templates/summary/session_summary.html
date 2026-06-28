@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="text-center text-2xl font-bold mb-4"> {{  club_name  }} - {{ session.date }} @ {{ session.venue }} </h2>
+
+
+<div class="space-y-2 px-4">
+    {% for player in players_in_session %}
+        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm
+            {% if player.rank <= 3 %}border-2 border-yellow-500{% endif %}">
+
+            <div class="font-medium flex items-center gap-2">
+
+                {% if player.rank == 1 %}
+                    🥇
+                {% elif player.rank == 2 %}
+                    🥈
+                {% elif player.rank == 3 %}
+                    🥉
+                {% endif %}
+
+                <span>
+                    {{ player.name }}
+                </span>
+        </div>
+
+
+            <div class="flex items-center gap-4 text-sm">
+
+                <span>
+                    {{ player.games }} games
+                </span>
+
+                <span class="text-red-400 font-semibold">
+                    {{ player.wins }}-{{ player.losses }}
+                </span>
+
+                <span class="font-bold">
+                    {{ player.win_rate|floatformat:1 }}%
+                </span>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+        <p class="text-gray-500 italic">No players yet.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
