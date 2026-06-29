@@ -1,77 +1,62 @@
 # Wai-Badminton-Tracker
 
-This is a lightweight web application designed to manage badminton sessions. Admin create sessions/users via the admin panel and then manage specific sessions via a central dashboard.
+<p align="center">
+<strong>WBT</strong> is a lightweight web application focused primarily on managing sessions for your badminton club via an intuitive powerful central dashboard. Built primarily using <strong>HTML</strong>, <strong>Django</strong>, and <strong>HTMX</strong>.
 
-It is built using **HTML**, **Django**, and **HTMX**.
+
+<img src="./images/wai-badminton-tracker.png" alt="wai-badminton-tracker">
+
+</p>
+
+
+
+| Feature | eBadders | SuperBadders | **WBT** |
+|---|---|---|---|
+| Court management | ✅ | ✅ | ✅ |
+| Automatic player matching | ✅ | ✅ | ✅ |
+| Transparent matchmaking algorithm | ❌ | ⚠️ | ✅ |
+| Adjustable matchmaking weights | ❌ | ✅ | ✅ |
+| Switch players in match | ✅ | ❌ | ✅ |
+| Non-admins can view session | ❌ | ❌ | ✅ |
+| Adjust player strength | ❌ | ⚠️ | ✅ |
+| Allow player pairings | ✅ | ⚠️ | ✅ |
+| Multiple device support | ✅ | ❌ | ✅ |
+| Offline mode | ❌ | ⚠️ | ❌ |
+| Handles session gender imbalance | ❌ | ✅ | ✅ |
+| Modern web interface | ✅ | ❌ | ✅ |
+| Session summary | ✅ | ❌ | ✅ |
+| Control over your own data | ❌ | ✅ | ✅ |
+| Import from other systems | ❌ | ❌ | ✅ |
+| **Open Source** | ❌ | ❌ | ✅ |
+
+
+## Getting Started
+
+#### Deployment
+See [DEPLOYMENT](DEPLOYMENT.md)
+
+
+#### Import Players
+Admins can import players from ebadders/ using the endpoints `{URL}/import-players/ebadders/` or `{URL}/import-players/superbadders/`
+
+##### Ebadders
+Under `https://ebadders.com/{YOUR_CLUB_NAME}/players?o=name` on Google Chrome, ctrl + S, Save as type `Web Page, HTML Only` and upload it to  `{URL}/import-players/ebadders/`
+
+
+##### Superbadders
+Under `https://www.superbadders.com/myplayers.php` > Backup/Export > , Copy to Clipboard and paste the string into  `{URL}/import-players/superbadders/`
+
+ 
+
+## Contributing
+
+Thank you for considering contributing! See [CONTRIBUTING](CONTRIBUTING.md)
+
+
+## License
 
 Licensed under the **PolyForm Noncommercial License 1.0.0**.  
 See [LICENSE](LICENSE) for details.
 
 **This software is for non-commercial use only.**
-
----
-
-# Getting Started
-
-This project requires **Docker** to run. Docker is used as a containerisation service that installs and manages all required dependencies automatically.
-
----
-
-## First-Time Setup
-
-Copy the example environment `.env.example` file -> `.env`
-Generate a Django secret key using:
-https://djecrety.ir
-Add the generated `DJANGO_SECRET_KEY` to your `.env` file.
-
-Add details for the admin account in the `.env` file.  
-These will be used to automatically create a superuser on server startup.
-
----
-
-## Running the Project
-
-Start the application using Docker Compose:
-
- `docker compose up`
-
- Note: The first run may require a second attempt as the database may not be fully ready on initial startup.
-
- This command will:
-
-- Apply migrations
-- Install requirements
-- Start the Django development server
-- Create the superuser (if configured)
-
----
-
-## Static Files
-
-Static files are automatically generated on container startup via the `docker-entrypoint`.  
-In the future, this should be handled via a Git hook.
-
----
-
-## Create migrations
-
-If making changes to any models, make/run migrations via
-`docker exec -it wai-badminton-tracker-web-1 python manage.py makemigrations core`
-`docker exec -it wai-badminton-tracker-web-1 python manage.py migrate`
-Container startup will also automatically apply any existing migrations via the `docker-entrypoint`.
-
---
-
-## Getting up and running
-
-- Login to the admin panel via `http://localhost:8000/`
-- From the admin panel -> create a session, access via link
-- Load data (from superbadders) via `http://localhost:8000/import-players/`
-
-
-## Deploying
-
-- Currently this is running on render (web-app) and aiven (postgres), the free tier being sufficient
-- To deploy a version of this, I recommend to clone a copy of this repo and point render to your cloned project
-
 

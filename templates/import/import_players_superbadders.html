@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Load Players from SuperBadders</h1>
+<h1>Load Players from SuperBadders (WARNING: This will delete ALL existing players)</h1>
 
-<form method="post" action="{% url 'import-players' %}">
+<form method="post" action="{% url 'import-players-superbadders' %}">
     {% csrf_token %}
     <p><strong>Paste the full restore string below:</strong></p>
     <textarea name="restore_string" rows="15" cols="120" 

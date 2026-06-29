@@ -1,4 +1,4 @@
-from ..models import PlayerSession, Match, Pair
+from ..models import PlayerSession, Match, Pair, MatchmakingConfig
 from .openskill import evaluate_win_differential, set_model
 
 from collections import defaultdict
@@ -197,16 +197,79 @@ def eval_match_fairness(teams):
     return max(-1.0, min(1.0, score))
 
 
+def eval_skill_difference(teams):
+    """
+    Evaluates intra-team skill balance using relative gap.
+    Returns score in [-1, 1].
+    """
+    if not teams or len(teams) != 2:
+        return 1.0
+
+    # Get global range from first player
+    sample = teams[0][0] if teams[0] else teams[1][0]
+    max_str = sample.get("max_strength", 0)
+    min_str = sample.get("min_strength", 0)
+    
+    global_range = max_str - min_str
+    if global_range <= 0:
+        return 1.0
+
+    def team_skill_gap(team):
+        if len(team) < 2:
+            return 0.0
+        strengths = [float(p.get("mu", 0)) for p in team]
+        return max(strengths) - min(strengths)
+
+    max_gap = max(team_skill_gap(teams[0]), team_skill_gap(teams[1]))
+    rel_gap = max_gap / global_range   # now safely float
+
+    # Hardcoded thresholds (you can tweak these)
+    if rel_gap <= 0.20:           # Top 20% of range
+        score = 1.0
+    elif rel_gap <= 0.35:
+        score = 1.0 - (rel_gap - 0.20) / 0.15 * 1.6
+    elif rel_gap <= 0.50:
+        score = 1.0 - (rel_gap - 0.20) / 0.30 * 2.8
+    else:
+        score = -0.6 - (rel_gap - 0.50) * 3.0   # steep penalty beyond 50%
+
+    return max(-1.0, min(1.0, round(score, 3)))
+
 
 # ====================== CONDITION REGISTRATION ======================
 
-match_condition_funcs = {
-    "games_played":         {"func": eval_games_played,         "weight": 28},
-    "fairness":             {"func": eval_match_fairness,       "weight": 10},
-    "played_with":          {"func": eval_match_played_with,    "weight": 5},
-    "played_against":       {"func": eval_match_played_against, "weight": 3},
-    "gender":               {"func": eval_gender_balance,       "weight": 2},
-}
+
+def get_match_condition_funcs():
+    """Return condition functions with live weights from database"""
+    config = MatchmakingConfig.get_config()
+    
+    return {
+        "games_played": {
+            "func": eval_games_played,
+            "weight": config.games_played_weight
+        },
+        "fairness": {
+            "func": eval_match_fairness,
+            "weight": config.fairness_weight
+        },
+        "played_with": {
+            "func": eval_match_played_with,
+            "weight": config.played_with_weight
+        },
+        "played_against": {
+            "func": eval_match_played_against,
+            "weight": config.played_against_weight
+        },
+        "gender": {
+            "func": eval_gender_balance,
+            "weight": config.gender_weight
+        },
+        "skill_difference": {
+            "func": eval_skill_difference,
+            "weight": config.skill_difference_weight
+        },
+    }
+
 
 pair_condition_funcs = {
     "games_played": eval_pair_games_played,
@@ -309,6 +372,10 @@ def generate_config(players_waiting, session):
 
     games_played_score = _calculate_normalised_playtime(players_waiting, player_sessions)
 
+    all_mus = [p.mu for p in players_waiting]
+    global_min_mu = min(all_mus) if all_mus else 0
+    global_max_mu = max(all_mus) if all_mus else 0
+
 
     for p in players_waiting:
 
@@ -316,7 +383,10 @@ def generate_config(players_waiting, session):
             "id": p.id,
             "name": p.name,
             "gender": p.gender,
-            "mu": p.mu,
+            "mu": float(p.mu),
+            "sigma": float(p.sigma),
+            "min_strength": float(global_min_mu),
+            "max_strength": float(global_max_mu),
             "sigma": p.sigma,
             "games_played_score": games_played_score.get(p.id, 0.0),
             "played_with": dict(played_with[p.id]),
@@ -385,14 +455,14 @@ def matchmaking(players_waiting, session, top_n=5):
         if len(best_scores) > top_n:
             best_scores.pop()
 
-    max_possible = sum(cond["weight"] for cond in match_condition_funcs.values())
+    max_possible = sum(cond["weight"] for cond in get_match_condition_funcs().values())
 
     for four in combinations(players, 4):
         for team1, team2 in _splits(four, blacklisted_pairs):
             overall_score = 0.0
             upper_bound = max_possible   # start optimistic
 
-            for cond in match_condition_funcs.values():
+            for cond in get_match_condition_funcs().values():
                 score = cond["func"]((team1, team2))
                 
                 overall_score += cond["weight"] * score
