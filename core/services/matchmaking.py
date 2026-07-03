@@ -8,6 +8,8 @@ from itertools import combinations
 from itertools import combinations
 from collections import defaultdict
 
+# import time
+
 
 def eval_pair_games_played(players):
     """
@@ -248,10 +250,7 @@ def get_match_condition_funcs():
             "func": eval_games_played,
             "weight": config.games_played_weight
         },
-        "fairness": {
-            "func": eval_match_fairness,
-            "weight": config.fairness_weight
-        },
+        
         "played_with": {
             "func": eval_match_played_with,
             "weight": config.played_with_weight
@@ -267,6 +266,10 @@ def get_match_condition_funcs():
         "skill_difference": {
             "func": eval_skill_difference,
             "weight": config.skill_difference_weight
+        },
+        "fairness": {
+            "func": eval_match_fairness,
+            "weight": config.fairness_weight
         },
     }
 
@@ -455,16 +458,22 @@ def matchmaking(players_waiting, session, top_n=5):
         if len(best_scores) > top_n:
             best_scores.pop()
 
-    max_possible = sum(cond["weight"] for cond in get_match_condition_funcs().values())
+    match_cond_funcs = get_match_condition_funcs()
+
+    max_possible = sum(cond["weight"] for cond in match_cond_funcs.values())
+
+    # start = time.perf_counter()
+    # itx = 0
 
     for four in combinations(players, 4):
         for team1, team2 in _splits(four, blacklisted_pairs):
             overall_score = 0.0
             upper_bound = max_possible   # start optimistic
 
-            for cond in get_match_condition_funcs().values():
+            for cond in match_cond_funcs.values():
+                # itx += 1
                 score = cond["func"]((team1, team2))
-                
+
                 overall_score += cond["weight"] * score
                 upper_bound -= cond["weight"] * (1.0 - score)   # subtract lost potential
                 
@@ -478,6 +487,9 @@ def matchmaking(players_waiting, session, top_n=5):
                     "score": overall_score
                 })
                 update_best(overall_score)
+
+    # elapsed = time.perf_counter() - start
+    # print(f"{elapsed}s, {itx}")
 
     # Final sort (only the survivors)
     sorted_matches = sorted(potential_matches, key=lambda x: x["score"], reverse=True)
