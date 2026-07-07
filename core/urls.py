@@ -1,5 +1,5 @@
 from .views import dashboard, helpers, admin, import_players, session_summary
-
+from .services import renders
 from django.urls import path
 
 
@@ -39,11 +39,16 @@ urlpatterns = [
     ),
 
     path(
-        "session/<uuid:uuid>/pause-player-in-pause/<int:player_id>/",
+        "session/<uuid:uuid>/pause-player-in-session/<int:player_id>/",
         helpers.pause_player_in_session,
-        name="pause_player_in_session",
+        name="pause_player",
     ),
 
+    path(
+        "session/<uuid:uuid>/unpause-player-in-session/<int:player_id>/",
+        helpers.unpause_player_in_session,
+        name="unpause_player",
+    ),
 
     path(
         "session/<uuid:uuid>/generate-upcoming-match/",
@@ -107,6 +112,17 @@ urlpatterns = [
         "session/<uuid:uuid>/switch-players/",
         helpers.switch_players,
         name="switch_players",
+    ),
+
+    path(
+        "session/<uuid:uuid>/waiting-players/",
+        renders.waiting_players,
+        name="waiting_players",
+    ),
+    path(
+        "session/<uuid:uuid>/paused-players/",
+        renders.paused_players,
+        name="paused_players",
     ),
 
     path('import-players/ebadders/', import_players.load_players_page_ebadders, name='import-players-ebadders'),

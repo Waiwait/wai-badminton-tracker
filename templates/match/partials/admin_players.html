@@ -3,12 +3,12 @@
 
 <form
     hx-post="{% url 'add_player_to_session' uuid=session.uuid %}"
-    hx-swap="beforeend"
+    hx-swap="none"
 >
     {% csrf_token %}
 
     <select name="player_id" class="border rounded-sm p-2 w-full text-black">
-        {% for player in players_not_in_session_or_paused %}
+        {% for player in players_not_in_session %}
             <option value="{{ player.id }}">
                 {{ player.get_name }}
             </option>
@@ -20,24 +20,20 @@
     </button>
 </form>
 
-<div class="space-y-2">
-    {% for player in players_waiting %}
-        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
-            <div class="font-medium">
-                {{ player.name_played }}
-            </div>
+<div id="admin-players" 
+    class="space-y-2"
+    hx-get="{% url 'waiting_players' session.uuid %}"
+    hx-trigger="load, waiting_update from:body"
+    hx-swap="innerHTML">
 
-            <form method="post" 
-                    hx-post="{% url 'pause_player_in_session' uuid=session.uuid player_id=player.id %}" 
-                    hx-swap="none">
-                {% csrf_token %}
-                <button type="submit" 
-                        class="text-red-600 hover:text-red-700 text-sm font-medium">
-                    Remove
-                </button>
-            </form>        
-        </div>
-        {% empty %}
-        <p class="text-gray-500 italic">No players yet.</p>
-    {% endfor %}
+    Loading waiting players...
+</div>
+
+<div id="paused-list"
+    class="space-y-2 mt-6"
+    hx-get="{% url 'paused_players' session.uuid %}"
+    hx-trigger="load, paused_update from:body"
+    hx-swap="innerHTML">
+
+    Loading paused players...
 </div>
