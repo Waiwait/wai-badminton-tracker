@@ -1,12 +1,14 @@
 :root {
     --dark-green: #0F2027;
     --dark-teal: #203A43;
+    --light-teal: #2C5364;
     --slate-blue: #2C4A6E;
     --crimson: #C0392B;
     --jade-green: #52A875;
     --text-colour: #FFFFFF;
 }
 
-.dark-text {
-    color: var(--dark-green);
+input, select {
+    text-color: var(--dark-green);
+    background-color: white;
 }

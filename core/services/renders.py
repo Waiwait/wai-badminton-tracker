@@ -1,8 +1,9 @@
 from .permissions import is_admin
-from ..models import Player, PlayerSession, UpcomingMatch, Pair
+from ..models import Session, Player, PlayerSession, UpcomingMatch, Pair
 
 import os
 
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -43,7 +44,9 @@ def render_players(session):
         {
             "id": ps.player.id,
             "name": ps.player.name,
-            "name_played": mark_safe(f"{Player.format_name_gender(ps.player.name, ps.player.gender == "F")}<sup>{ps.games_played}|{ps.games_skipped + ps.games_played}</sup>"),
+            "name_played": mark_safe(
+                f"{Player.format_name_gender(ps.player.name, ps.player.gender == 'F')}<sup>{ps.games_played}|{ps.games_skipped + ps.games_played}</sup>"
+            ),
         }
         for ps in player_sessions
     ], key=lambda p: (p["name"].lower()))
@@ -57,14 +60,12 @@ def render_players(session):
     players_not_in_session = Player.objects.exclude(
         playersession__session=session
     ).distinct().order_by("name")
-
-    combined = players_paused | players_not_in_session
-    combined = combined.distinct()
     
     return {
         "session": session,
         "players_waiting": players_waiting_dict,
-        "players_not_in_session_or_paused": combined,
+        "players_not_in_session": players_not_in_session,
+        "players_paused": players_paused,
     }
 
 
@@ -188,3 +189,29 @@ def render_switch_players(session):
         'players_waiting': players_waiting,
         'session': session, 
     }
+
+def waiting_players(request, uuid):
+    session = get_object_or_404(Session, uuid=uuid)
+
+    players = Player.objects.filter(
+        playersession__session=session,
+        playersession__pause=False
+    )
+
+    return render(request, "match/partials/waiting_list.html", {
+        "players": players,
+        "session": session,
+    })
+
+def paused_players(request, uuid):
+    session = get_object_or_404(Session, uuid=uuid)
+
+    players = Player.objects.filter(
+        playersession__session=session,
+        playersession__pause=True
+    )
+
+    return render(request, "match/partials/paused_list.html", {
+        "players": players,
+        "session": session,
+    })

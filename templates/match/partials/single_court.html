@@ -1,26 +1,9 @@
-<div class="relative">
-
-<div class="grid grid-cols-7 items-center mb-2 w-full">
-
-    <!-- Left (empty balance space) -->
-    <div></div>
-
-    <div></div>
-
-    <div></div>
-
-    <!-- Center -->
+<div class="relative w-full mb-4">
     <strong class="text-lg font-semibold text-center">
         {{ court.number }}
     </strong>
 
-
-    <div></div>
-
-    <div></div>
-
-    <!-- Right -->
-    <div class="flex justify-end">
+    <div class="absolute top-0 right-[5px]">
         {% if show_timer %}
         <div data-match-timer data-seconds="{{ elapsed_seconds }}"
             class="text-sm font-mono px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
@@ -68,7 +51,7 @@
             min="0" 
             max="30" 
             value="{{ team1_score|default:0 }}"
-            class="w-20 dark-text p-1 border rounded-sm"
+            class="w-20 text-(--dark-green) p-1 border rounded-sm"
             placeholder="21"
             required>
 
@@ -77,16 +60,18 @@
             min="0" 
             max="30" 
             value="{{ team2_score|default:0 }}"
-            class="w-20 dark-text p-1 border rounded-sm"
+            class="w-20 text-(--dark-green) p-1 border rounded-sm"
             placeholder="21"
             required>                
     </div>
 
-    <button type="button" class="primary-button mt-4 finish-match-btn">Finish Match</button>
-    <div class="confirm-score invisible">
-        <div class="text-sm mt-2 score-text">Submit the score 0 - 0</div>
-        <button type="submit" class="primary-button mt-4">Submit Score</button>
-        <button type="button" class="primary-button mt-4 cancel-score-btn">Cancel</button>
+    <button type="button" class="primary-button mt-4 finish-match-btn" data-court-number="{{ court.number }}">Finish Match</button>
+    <div class="confirm-score z-10 bg-[rgba(0,0,0,0.5)] absolute top-0 bottom-0 left-0 right-0 hidden">
+        <div class="absolute bg-(--light-teal) p-5 rounded-sm top-[50%] left-[50%] transform -translate-x-[50%] -translate-y-[50%]">
+            <div class="text-sm mt-2 font-bold score-text">Submit the score 0 - 0 for court {{court.number}}</div>
+            <button type="submit" class="primary-button mt-4 submit-score-btn">Submit Score</button>
+            <button type="button" class="primary-button mt-4 cancel-score-btn">Cancel</button>
+        </div>
     </div>
 </form>
 {% endif %}
@@ -115,4 +100,3 @@
 
     {% endif %}
 {% endif %}
-</div>

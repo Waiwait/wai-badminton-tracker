@@ -1,0 +1,3 @@
+{% for player in players %}
+    {% include "match/partials/player_row.html" with player=player state="waiting" %}
+{% endfor %}
