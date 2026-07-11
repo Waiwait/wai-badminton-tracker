@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player, Session, PlayerSession, Court, MatchmakingConfig
+from .models import Player, Session, PlayerSession, Court, MatchmakingConfig, ClubConfig
 
 from django.urls import reverse
 from django.utils.html import format_html
@@ -68,3 +68,9 @@ class MatchmakingConfigAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False  # Prevent deletion
+    
+
+@admin.register(ClubConfig)
+class ClubConfig(admin.ModelAdmin):
+    list_display = ("key", "value")
+    list_filter = ("key",)

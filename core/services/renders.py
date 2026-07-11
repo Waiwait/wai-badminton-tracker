@@ -1,5 +1,5 @@
 from .permissions import is_admin
-from ..models import Session, Player, PlayerSession, UpcomingMatch, Pair
+from ..models import Session, Player, PlayerSession, UpcomingMatch, Pair, ClubConfig, GenderPair
 
 import os
 
@@ -13,7 +13,7 @@ def render_courts(request, session):
     courts = session.courts.all().order_by("number")
 
     return {
-        "club_name": os.environ.get('APP_CLUB_NAME'),
+        "club_name": ClubConfig.get("club_name", "WBT"),
         "session": session,
         "court_ids": [court.id for court in courts],
         "show_admin_panel": is_admin(request.user),
@@ -143,27 +143,74 @@ def render_upcoming_match(request, session, upcoming_match):
         "value": upcoming_match.value,
     }
 
+
 def render_pairs(session):
-    # Get all pairs for this session
+    # Normal pairs
     pairs = Pair.objects.filter(session=session).select_related(
-        'player1_s__player', 
-        'player2_s__player'
+        "player1_s__player",
+        "player2_s__player",
     )
 
-    # Get all PlayerSessions that are NOT yet in any pair
-    paired_ids = Pair.objects.filter(session=session).values_list(
-        'player1_s_id', 'player2_s_id', flat=False
+    # Gender pairs
+    gender_pairs = GenderPair.objects.filter(session=session).select_related(
+        "player1_s__player"
     )
-    paired_ids = {pid for pair in paired_ids for pid in pair}
 
-    player_sessions_not_paired = session.playersession_set.all().select_related('player').exclude(
-        id__in=paired_ids
-    ).filter(pause=False).order_by('player__name')
+    # IDs used in normal pairs
+    pair_ids = Pair.objects.filter(session=session).values_list(
+        "player1_s_id",
+        "player2_s_id",
+    )
+
+    # IDs used in gender pairs
+    gender_pair_ids = GenderPair.objects.filter(session=session).values_list(
+        "player1_s_id",
+        flat=True,
+    )
+
+    paired_ids = {
+        *{pid for pair in pair_ids for pid in pair},
+        *gender_pair_ids,
+    }
+
+    # Players available for normal pairs
+    player_sessions_not_paired = (
+        session.playersession_set
+        .select_related("player")
+        .exclude(id__in=paired_ids)
+        .filter(pause=False)
+        .order_by("player__name")
+    )
+
+    player_sessions_not_paired_and_gender = [
+        {
+            "type": "gender",
+            "value": "M",
+            "display": "MEN",
+        },
+        {
+            "type": "gender",
+            "value": "F",
+            "display": "WOMEN",
+        },
+    ]
+
+    player_sessions_not_paired_and_gender += [
+        {
+            "type": "player",
+            "object": ps,
+        }
+        for ps in player_sessions_not_paired
+    ]
+
+    
 
     return {
-        'pairs': pairs,
-        'player_sessions_not_paired': player_sessions_not_paired,
-        'session': session,
+        "pairs": pairs,
+        "gender_pairs": gender_pairs,
+        "player_sessions_not_paired": player_sessions_not_paired,
+        "player_sessions_not_paired_and_gender": player_sessions_not_paired_and_gender,
+        "session": session,
     }
 
 

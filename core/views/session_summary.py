@@ -1,5 +1,5 @@
 
-from ..models import Session, Match
+from ..models import Session, Match, ClubConfig
 from collections import defaultdict
 
 from django.shortcuts import render, get_object_or_404
@@ -69,4 +69,5 @@ def session_summary(request, uuid):
     return render(request, "summary/session_summary.html", {
         "session": session,
         "players_in_session": players_in_session,
+        "club_name": ClubConfig.get("club_name", "WBT")
     })

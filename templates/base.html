@@ -18,6 +18,11 @@
 
 <body>
 
+    <div id="toast-container"
+         class="fixed top-5 right-5 z-50 space-y-3">
+    </div>
+
+
     {% block content %}
     {% endblock %}
 
@@ -26,11 +31,36 @@
         document.body.addEventListener('htmx:configRequest', function (event) {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
         });
-        </script>
+    </script>
 
-    <!-- HTMX (required for hx-get, hx-trigger, etc.) -->
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+
+
+    <script>
+    document.body.addEventListener("showToast", function(event) {
+        const data = event.detail;
+
+        const toast = document.createElement("div");
+
+        toast.className =
+            "bg-[#203A43] text-white px-4 py-3 rounded-lg shadow-lg border border-[#0F2027] transition-opacity duration-500";
+
+        toast.innerText = data.message;
+
+        document.getElementById("toast-container").appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add("opacity-0");
+
+            setTimeout(() => {
+                toast.remove();
+            }, 500);
+
+        }, 3000);
+    });
+    </script>
+
 
     <script src="{% static 'js/index.js' %}"></script>
 

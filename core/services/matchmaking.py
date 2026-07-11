@@ -1,4 +1,4 @@
-from ..models import PlayerSession, Match, Pair, MatchmakingConfig
+from ..models import PlayerSession, Match, Pair, GenderPair, MatchmakingConfig
 from .openskill import evaluate_win_differential, set_model
 
 from collections import defaultdict
@@ -48,6 +48,25 @@ def eval_pair_pairings(players):
     if players[0]["id"] == players[1]["partner_id"] and players[1]["id"] == players[0]["partner_id"]: return True
 
     return False
+
+
+def eval_gender_pair_requirement(players):
+    """
+    Checks whether players satisfy gender partner requirements.
+    players = [player1, player2]
+    """
+
+    p1, p2 = players
+
+    if p1["required_gender"] is not None:
+        if p2["gender"] != p1["required_gender"]:
+            return False
+
+    if p2["required_gender"] is not None:
+        if p1["gender"] != p2["required_gender"]:
+            return False
+
+    return True
 
 
 def eval_match_played_against(teams):
@@ -277,6 +296,7 @@ def get_match_condition_funcs():
 pair_condition_funcs = {
     "games_played": eval_pair_games_played,
     "pairing": eval_pair_pairings,
+    "gender_pairing": eval_gender_pair_requirement,
 }
 
 
@@ -373,6 +393,16 @@ def generate_config(players_waiting, session):
         partners[p1_id] = p2_id
         partners[p2_id] = p1_id
 
+    # Gender pairs
+    gender_requirements = {}
+    gender_pairs = GenderPair.objects.filter(session=session).values_list(
+        "player1_s__player_id",
+        "gender",
+    )
+
+    for player_id, gender in gender_pairs:
+        gender_requirements[player_id] = gender
+
     games_played_score = _calculate_normalised_playtime(players_waiting, player_sessions)
 
     all_mus = [p.mu for p in players_waiting]
@@ -394,7 +424,8 @@ def generate_config(players_waiting, session):
             "games_played_score": games_played_score.get(p.id, 0.0),
             "played_with": dict(played_with[p.id]),
             "played_against": dict(played_against[p.id]),
-            "partner_id": partners.get(p.id, None)
+            "partner_id": partners.get(p.id, None),
+            "required_gender": gender_requirements.get(p.id, None),
         }
 
     return result
@@ -442,10 +473,19 @@ def _get_blacklisted_pairs(players):
     return blacklisted
 
 
-def matchmaking(players_waiting, session, top_n=5):
+def matchmaking(players_waiting, session, top_n=5, max_players_before_sampling=16):
     set_model()
     players_dict = generate_config(players_waiting, session)
     players = list(players_dict.values())
+
+    # To keep this bounded, only take top x players who have played the least matches
+    if len(players) > max_players_before_sampling:
+        players = sorted(
+            players,
+            key=lambda p: p["games_played_score"],
+            reverse=True,  
+        )[:max_players_before_sampling]
+
 
     blacklisted_pairs = _get_blacklisted_pairs(players)
 
