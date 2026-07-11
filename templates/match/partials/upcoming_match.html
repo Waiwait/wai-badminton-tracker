@@ -6,21 +6,21 @@
 
     <div class="grid grid-cols-1">
         {% if show_admin_panel %}
-            <span>{{ player1.get_name_with_mu }}</span>
-            <span>{{ player2.get_name_with_mu }}</span>
+            <span>{{ player1.get_name_with_mu_short }}</span>
+            <span>{{ player2.get_name_with_mu_short }}</span>
         {% else %}
-            <span>{{ player1.get_name }}</span>
-            <span>{{ player2.get_name }}</span>
+            <span>{{ player1.get_name_short }}</span>
+            <span>{{ player2.get_name_short }}</span>
         {% endif %}
     </div>
 
     <div class="grid grid-cols-1">
         {% if show_admin_panel %}
-            <span>{{ player3.get_name_with_mu }}</span>
-            <span>{{ player4.get_name_with_mu }}</span>
+            <span>{{ player3.get_name_with_mu_short }}</span>
+            <span>{{ player4.get_name_with_mu_short }}</span>
         {% else %}
-            <span>{{ player3.get_name }}</span>
-            <span>{{ player4.get_name }}</span>
+            <span>{{ player3.get_name_short }}</span>
+            <span>{{ player4.get_name_short }}</span>
         {% endif %}
     </div>
 
