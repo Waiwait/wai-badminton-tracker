@@ -1,7 +1,11 @@
 <div id="player-{{ player.id }}" class="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-800 rounded">
 
     <div>
-        {{ player.get_name }}
+        {% if state == "waiting" %}
+            {{ player.name_played }}
+        {% else %}
+            {{ player.get_name }}
+        {% endif %}
     </div>
 
     {% if state == "waiting" %}

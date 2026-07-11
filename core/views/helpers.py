@@ -75,7 +75,6 @@ def pause_player_in_session(request, uuid, player_id):
         "state": "paused",
         "session": session,
     })
-
     response["HX-Trigger"] = json.dumps({
         "waiting_update": True,
         "paused_update": True,
@@ -85,6 +84,29 @@ def pause_player_in_session(request, uuid, player_id):
 
     return response
 
+@user_passes_test(is_admin)
+def unpause_player_in_session(request, uuid, player_id):
+    session = get_object_or_404(Session, uuid=uuid)
+    player = get_object_or_404(Player, id=player_id)
+
+    ps = PlayerSession.objects.get(session=session, player=player)
+    ps.pause = False
+    ps.save(update_fields=["pause"])
+
+    response = render(request, "match/partials/player_row.html", {
+        "player": player,
+        "state": "waiting",
+        "session": session,
+    })
+
+    response["HX-Trigger"] = json.dumps({
+        "waiting_update": True,
+        "paused_update": True,
+        "pairs_update": True,
+        "switch_players_update": True,
+    })
+
+    return response
 
 
 @user_passes_test(is_admin)
