@@ -267,7 +267,7 @@ class MatchmakingConfig(models.Model):
                 'fairness_weight': 10,
                 'skill_difference_weight': 4,
                 'played_with_weight': 7,
-                'played_against_weight': 3,
+                'played_against_weight': 4,
                 'gender_weight': 2,
             }
         )
