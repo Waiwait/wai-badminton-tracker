@@ -20,21 +20,21 @@
 <div class="grid grid-cols-2 gap-4 w-full mb-2">
     <div class="grid grid-cols-1">
         {% if show_admin_panel %}
-        <span>{{ team1.0.get_name_with_mu }}</span>
-        <span>{{ team1.1.get_name_with_mu }}</span>
+        <span>{{ team1.0.get_name_with_mu_short }}</span>
+        <span>{{ team1.1.get_name_with_mu_short }}</span>
         {% else %}
-        <span>{{ team1.0.get_name }}</span>
-        <span>{{ team1.1.get_name }}</span>
+        <span>{{ team1.0.get_name_short }}</span>
+        <span>{{ team1.1.get_name_short }}</span>
         {% endif %}
     </div>
 
     <div class="grid grid-cols-1">
         {% if show_admin_panel %}
-        <span>{{ team2.0.get_name_with_mu }}</span>
-        <span>{{ team2.1.get_name_with_mu }}</span>
+        <span>{{ team2.0.get_name_with_mu_short }}</span>
+        <span>{{ team2.1.get_name_with_mu_short }}</span>
         {% else %}
-        <span>{{ team2.0.get_name }}</span>
-        <span>{{ team2.1.get_name }}</span>
+        <span>{{ team2.0.get_name_short }}</span>
+        <span>{{ team2.1.get_name_short }}</span>
         {% endif %}
     </div>
 </div>

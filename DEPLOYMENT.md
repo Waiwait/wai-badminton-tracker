@@ -1,5 +1,56 @@
 # DEPLOYMENT
 
-- Currently this is running on render (web-app) and aiven (postgres), the free tier being sufficient
-- To deploy a version of this, I recommend to clone a copy of this repo and point render to your cloned project
+To set this up, you'll need to set up a web service and a database which should take 5-10 minutes. I recommend deploying this on render (web-app)/ aiven(database) as they offer free hosting.
 
+## Database (Aiven)
+
+- Sign up/in via [Aiven](https://console.aiven.io/signup)
+- Create a workspace if needed `Workspace (Top Bar) > + New Workspace > Hobby > Create Workspace`
+- Create a project to store the database `Projects (Top Bar) > Create Project`
+- From your new project, crea the database `Services (Left Bar) > Create Service > PostgreSQL`
+- For the database configuration:
+
+```
+Service tier: Free
+Cloud: (whatever region closest to your location)
+Plan: Free-1-1gb
+Name: (Give it a name)
+
+```
+and then `Create service`
+
+
+## App Service (Render)
+
+- Sign up/in via [Render](https://dashboard.render.com/register)
+- Create a new web service pointing to the code repository `New Web Service > Public Git Repository > https://github.com/Waiwait/wai-badminton-tracker > Connect` (You can also fork this repository into your own GitHub account and deploy from there if you want full control over future changes.)
+- For the configuration:
+
+```
+Name: (Give it a name, I recommend the name of your club)
+Language: Docker
+Region: (whatever region closest to the region you set up the database)
+Instance Type: Free
+Root Directory: (leave empty)
+
+
+Environment Variables: Click Add from .env and copy and paste the following:
+
+
+DATABASE_URL= >>> Copy this from Aiven > Services > DATABASE > Connection information > Service URI
+DJANGO_ALLOWED_HOSTS={your-app-name}.onrender.com
+DJANGO_DEBUG=False
+DJANGO_SECRET_KEY= Generate this via https://djecrety.ir/
+DJANGO_SUPERUSER_EMAIL= >>> This will be the admin account for you to log into
+DJANGO_SUPERUSER_PASSWORD= >>> This will be the admin account for you to log into
+DJANGO_SUPERUSER_USERNAME= >>> This will be the admin account for you to log into
+PORT=10000
+
+and then `Deploy Web Service`
+```
+
+## Post Deployment
+
+Congratulations! After a few minutes, your application should be hosted on https://{your-app-name}.onrender.com/. 
+To get started, login with the admin credentails you generated earlier, and generate a session to manage via Sessions. You can also import players via ebadders/superbadders as outlined [here](README.md#import-players)
+Do note that because it's the free tier, if it's left inactive, the website will take 1-2 minutes to turn back on again.

@@ -28,12 +28,21 @@
             <select name="p2_s_id" 
                     class="w-full text-(--dark-green) p-2 border rounded-sm" 
                     required>
+
                 <option value="">Select Player 2</option>
-                {% for ps in player_sessions_not_paired %}
-                    <option value="{{ ps.id }}">
-                        {{ ps.player.name }}
-                    </option>
+
+                {% for ps in player_sessions_not_paired_and_gender %}
+                    {% if ps.type == "player" %}
+                        <option value="{{ ps.object.id }}">
+                            {{ ps.object.player.name }}
+                        </option>
+                    {% else %}
+                        <option value="gender_{{ ps.value }}">
+                            {{ ps.display }}
+                        </option>
+                    {% endif %}
                 {% endfor %}
+
             </select>
         </div>
     </div>
@@ -53,6 +62,24 @@
             <!-- Delete Button -->
             <form method="post" 
                   hx-post="{% url 'delete_pair' uuid=session.uuid pair_id=pair.id %}" 
+                  hx-swap="none">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="text-red-600 hover:text-red-700 text-sm font-medium">
+                    Delete
+                </button>
+            </form>
+        </div>
+    {% endfor %}
+    {% for pair in gender_pairs %}
+        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+            <div class="font-medium">
+                {{ pair.get_name }}
+            </div>
+            
+            <!-- Delete Button -->
+            <form method="post" 
+                  hx-post="{% url 'delete_pair' uuid=session.uuid pair_id=pair.id %}?gender_pair=true" 
                   hx-swap="none">
                 {% csrf_token %}
                 <button type="submit" 
