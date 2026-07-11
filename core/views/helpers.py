@@ -1,4 +1,4 @@
-from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession, UpcomingMatch, Pair
+from ..models import Session, Player, Match, Court, MatchTeam, MatchParticipant, PlayerSession, UpcomingMatch, Pair, GenderPair
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
 from ..services.openskill import score_match
@@ -266,6 +266,9 @@ def generate_upcoming_match(request, uuid):
 
     upcoming_matches = matchmaking(players_waiting=players_waiting, session=session)
 
+    if len(upcoming_match) == 0:
+        return HttpResponse("No games can be generated with constraints, see pairs or allow for more players to finish their games")
+
     for upcoming_match in upcoming_matches:
 
         p_ids = []
@@ -393,51 +396,88 @@ def delete_upcoming_matches(request, uuid):
 def add_pair(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
 
-    # Use the correct model name (Pair, not Pairs)
-    existing_pairs = Pair.objects.filter(session=session)
+    p1_s_id = request.POST.get("p1_s_id")
+    p2_s_id = request.POST.get("p2_s_id")
 
-    p1_s_id = request.POST.get('p1_s_id')
-    p2_s_id = request.POST.get('p2_s_id')
+    # Check player 1 is always a real player
+    if not PlayerSession.objects.filter(
+        id=p1_s_id,
+        session=session
+    ).exists():
+        return HttpResponse("Player 1 not found in session", status=400)
+    
 
-
-    if p1_s_id == p2_s_id:
-        return HttpResponse(f"User cannot pair with himself", status=400)
-    # Collect all player session IDs already in a pair for this session
     used_player_ids = set()
-    for pair in existing_pairs:
-        used_player_ids.add(pair.player1_s_id)   # more efficient than .id
+
+    for pair in Pair.objects.filter(session=session):
+        used_player_ids.add(pair.player1_s_id)
         used_player_ids.add(pair.player2_s_id)
 
-    for p_s_id in [p1_s_id, p2_s_id]:
-        if p_s_id in used_player_ids:
-            return HttpResponse(f"Player {p_s_id} is already paired in this session", status=400)
-        
-        if not PlayerSession.objects.filter(id=p_s_id).exists():
-            return HttpResponse(f"PlayerSession {p_s_id} not found in session", status=400)
+    for gender_pair in GenderPair.objects.filter(session=session):
+        used_player_ids.add(gender_pair.player1_s_id)
 
-    # Create the new pair
-    Pair.objects.create(
-        session=session,
-        player1_s_id=p1_s_id,      # Using _id is efficient
-        player2_s_id=p2_s_id,
-    )
+    if p1_s_id in used_player_ids:
+        return HttpResponse(
+            f"Player {p1_s_id} is already paired",
+            status=400
+            )
+
+
+    # Handle gender pair
+    if p2_s_id.startswith("gender_"):
+        gender = p2_s_id.replace("gender_", "")
+
+        GenderPair.objects.create(
+            session=session,
+            player1_s_id=p1_s_id,
+            gender=gender,
+        )
+
+    else:
+        # Normal pair
+        if p1_s_id == p2_s_id:
+            return HttpResponse(
+                "User cannot pair with himself",
+                status=400
+            )
+        
+        if p2_s_id in used_player_ids:
+            return HttpResponse(
+                f"Player {p2_s_id} is already paired",
+                status=400
+                )
+
+
+        if not PlayerSession.objects.filter(
+            id=p2_s_id,
+            session=session
+        ).exists():
+            return HttpResponse(
+                "Player 2 not found in session",
+                status=400
+            )
+
+        Pair.objects.create(
+            session=session,
+            player1_s_id=p1_s_id,
+            player2_s_id=p2_s_id,
+        )
 
     response = HttpResponse("ok")
     response["HX-Trigger"] = json.dumps({
         "pairs_update": True,
     })
-    
-    return response
 
+    return response
 
 
 @user_passes_test(is_admin)
 def delete_pair(request, uuid, pair_id):
+    pair_model = GenderPair if request.GET.get("gender_pair") == "true" else Pair
 
-    # Try to find the pair in either order
-    pair = Pair.objects.filter(
-    ).filter(
+    pair_model.objects.filter(
         id=pair_id,
+        session__uuid=uuid,
     ).delete()
 
     response = HttpResponse("ok")
