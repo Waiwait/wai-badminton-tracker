@@ -237,8 +237,8 @@ class MatchmakingConfig(models.Model):
     # Weights
     games_played_weight = models.PositiveIntegerField(default=25, help_text="Playtime fairness")
     fairness_weight = models.PositiveIntegerField(default=10, help_text="Overall match skill fairness (win differential)")
-    played_with_weight = models.PositiveIntegerField(default=5, help_text="Teammate repeat penalty")
-    played_against_weight = models.PositiveIntegerField(default=3, help_text="Opponent repeat penalty")
+    played_with_weight = models.PositiveIntegerField(default=7, help_text="Teammate repeat penalty")
+    played_against_weight = models.PositiveIntegerField(default=4, help_text="Opponent repeat penalty")
     gender_weight = models.PositiveIntegerField(default=2, help_text="Gender balance")
     skill_difference_weight = models.PositiveIntegerField(default=3, help_text="Intra-team skill gap penalty")
 
