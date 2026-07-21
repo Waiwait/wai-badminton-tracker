@@ -115,7 +115,20 @@ class Match(models.Model):
         related_name="matches"
     )
     started_at = models.DateTimeField(default=timezone.now, null=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
     finished = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Set finished_at the first time the match is marked as finished.
+        if self.finished and self.finished_at is None:
+            self.finished_at = timezone.now()
+
+        # Optional: clear timestamp if match is reopened.
+        elif not self.finished:
+            self.finished_at = None
+
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"Match {self.id} on Court {self.court.number if self.court else '?'}"

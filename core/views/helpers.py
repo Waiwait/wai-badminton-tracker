@@ -238,12 +238,18 @@ def finish_match(request, uuid, match_id):
                 ]
             )
 
-
-    return hx_response(
-        message=toast_message or (
+    if toast_message:
+        message = toast_message
+    elif cancelled_game:
+        message = f"Match on Court {match.court.number} finished! Treating game as cancelled as score is below threshold"
+    else:
+        message =  (
             f"Match on Court {match.court.number} finished! "
             f"Score: {team1_score} - {team2_score}"
         ),
+
+    return hx_response(
+        message=message,
         triggers={
             "players_update": True,
             f"court_{match.court.id}_update": True,
@@ -362,7 +368,7 @@ def generate_upcoming_match(request, uuid):
         return hx_response(
             message=(
                 "No games can be generated with constraints, "
-                "see pairs or allow more players to finish their games"
+                "check pairs or allow more players to finish their games"
             )
         )
 
@@ -385,6 +391,7 @@ def generate_upcoming_match(request, uuid):
 
 
     return hx_response(
+        message="Matchmaking successful! Add upcoming match to a free court or regenerate",
         triggers={
             "upcoming_match_update": True,
             "all_courts_update": True,
@@ -526,6 +533,7 @@ def delete_upcoming_match(request, uuid, upcoming_match_id):
 
 
     return hx_response(
+        message="Deleted/regenerated the upcoming match. Note: there is a fixed limit of matches that can be regenerated",
         triggers={
             "upcoming_match_update": True,
             "all_courts_update": True,

@@ -58,6 +58,7 @@ def court_board(request, uuid):
         render_courts(request, session)
         )
 
+
 def single_court(request, uuid, court_id):
     session = get_object_or_404(Session, uuid=uuid)
     court = get_object_or_404(Court, id=court_id, session=session)
