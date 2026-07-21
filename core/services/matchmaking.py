@@ -130,37 +130,56 @@ def eval_match_played_with(teams):
     for p in all_players:
         p_id = p["id"]
         played_with = p.get("played_with", {})
-        total_games = (sum(played_with.values()) +
-                       sum(p.get("played_against", {}).values()))
+        total_games = (
+            sum(played_with.values()) +
+            sum(p.get("played_against", {}).values())
+        )
 
         if total_games == 0:
             continue
 
+        teammates = team1 if p in team1 else team2
+
         repeat_games = 0
         teammate_count = 0
 
-        teammates = team1 if p in team1 else team2
         for other in teammates:
             if other["id"] == p_id:
                 continue
-            games_with = played_with.get(other["id"], 0)
-            if games_with > 0:
-                repeat_games += games_with
-                teammate_count += 1
 
-        if teammate_count > 0:
-            player_ratio = repeat_games / (total_games * teammate_count)
-            total_ratio += player_ratio
-            active_players += 1
+            # Ignore mandatory pairings completely.
+            if (
+                p.get("partner_id") == other["id"] and
+                other.get("partner_id") == p_id
+            ):
+                continue
+
+            games_with = played_with.get(other["id"], 0)
+            repeat_games += games_with
+            teammate_count += 1
+
+        # Team consisted only of a mandatory pair.
+        if teammate_count == 0:
+            continue
+
+        player_ratio = repeat_games / (total_games * teammate_count)
+
+        # Hard fail for excessive repeat teammates.
+        if player_ratio >= 0.3:
+            return -1.0
+
+        total_ratio += player_ratio
+        active_players += 1
 
     if active_players == 0:
-        return 1.0
+        return 0.0  # Match only contained mandatory pairings.
 
     avg_ratio = total_ratio / active_players
     unfairness = min(1.0, avg_ratio / 0.3)
     score = 1 - 2 * unfairness
 
     return max(-1.0, min(1.0, score))
+
 
 def eval_games_played(teams):
     """Evaluates playtime fairness using pre-normalized scores."""
@@ -235,10 +254,15 @@ def eval_skill_difference(teams):
     if global_range <= 0:
         return 1.0
 
+
     def team_skill_gap(team):
         if len(team) < 2:
             return 0.0
-        strengths = [float(p.get("mu", 0)) for p in team]
+        # Women rated 4 points higher since same strength women/men means women is more "skilled"
+        strengths = [
+            float(p.get("mu", 0)) + (4 if p.get("gender") == "F" else 0)
+            for p in team
+        ]
         return max(strengths) - min(strengths)
 
     max_gap = max(team_skill_gap(teams[0]), team_skill_gap(teams[1]))
@@ -492,15 +516,7 @@ def matchmaking(players_waiting, session, top_n=5, max_players_before_sampling=1
     potential_matches = []
     best_scores = []
 
-    def update_best(score):
-        best_scores.append(score)
-        best_scores.sort(reverse=True)
-        if len(best_scores) > top_n:
-            best_scores.pop()
-
     match_cond_funcs = get_match_condition_funcs()
-
-    max_possible = sum(cond["weight"] for cond in match_cond_funcs.values())
 
     # start = time.perf_counter()
     # itx = 0
@@ -508,29 +524,25 @@ def matchmaking(players_waiting, session, top_n=5, max_players_before_sampling=1
     for four in combinations(players, 4):
         for team1, team2 in _splits(four, blacklisted_pairs):
             overall_score = 0.0
-            upper_bound = max_possible   # start optimistic
 
             for cond in match_cond_funcs.values():
-                # itx += 1
                 score = cond["func"]((team1, team2))
-
                 overall_score += cond["weight"] * score
-                upper_bound -= cond["weight"] * (1.0 - score)   # subtract lost potential
-                
-                # Early pruning
-                if upper_bound < (best_scores[-1] if best_scores else -999):
-                    break
 
-            if overall_score > (best_scores[-1] if best_scores else -999):
-                potential_matches.append({
-                    "teams": [team1, team2],
-                    "score": overall_score
-                })
-                update_best(overall_score)
+            potential_matches.append({
+                "teams": [team1, team2],
+                "score": overall_score
+            })
 
     # elapsed = time.perf_counter() - start
     # print(f"{elapsed}s, {itx}")
 
     # Final sort (only the survivors)
-    sorted_matches = sorted(potential_matches, key=lambda x: x["score"], reverse=True)
+    # after the loops
+    sorted_matches = sorted(
+        potential_matches,
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
     return sorted_matches[:top_n]

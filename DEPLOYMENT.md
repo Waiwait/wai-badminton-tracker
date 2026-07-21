@@ -38,7 +38,7 @@ Environment Variables: Click Add from .env and copy and paste the following:
 
 
 DATABASE_URL= >>> Copy this from Aiven > Services > DATABASE > Connection information > Service URI
-DJANGO_ALLOWED_HOSTS={your-app-name}.onrender.com
+DJANGO_ALLOWED_HOSTS=Leave blank for now, this is the URL that's generated for the instance by Render
 DJANGO_DEBUG=False
 DJANGO_SECRET_KEY= Generate this via https://djecrety.ir/
 DJANGO_SUPERUSER_EMAIL= >>> This will be the admin account for you to log into
@@ -51,6 +51,6 @@ and then `Deploy Web Service`
 
 ## Post Deployment
 
-Congratulations! After a few minutes, your application should be hosted on https://{your-app-name}.onrender.com/. 
+Congratulations! After a few minutes, your application should be hosted on something like https://{your-app-name}.onrender.com/. This can be found on the Web Service page. Add this back to DJANGO_ALLOWED_HOST WITHOUT the https:// part (Manage > Environment > Update the variable > Save, rebuild and deploy )
 To get started, login with the admin credentails you generated earlier, and generate a session to manage via Sessions. You can also import players via ebadders/superbadders as outlined [here](README.md#import-players)
-Do note that because it's the free tier, if it's left inactive, the website will take 1-2 minutes to turn back on again.
+Do note that because it's the free tier, if it's left inactive, the website will take 1-2 minutes to turn back on again. To work around this: once you've created a session, I recommend running a cron job via https://console.cron-job.org/ against a session summary every 14 minutes, this will keep the app/database from sleeping.

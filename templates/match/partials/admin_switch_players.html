@@ -1,4 +1,4 @@
-<h2 class="text-center font-bold mb-4">Switch Players</h2>
+<h2 class="text-center font-bold mb-4">Switch Player on Court</h2>
 
 <!-- Add New Pair Form -->
 <form method="post" 
@@ -13,7 +13,7 @@
             <select name="player1_id" 
                     class="w-full text-(--dark-green) p-2 border rounded-sm" 
                     required>
-                <option value="">Player 1</option>
+                <option value="">Player on Court</option>
                 {% for p1 in in_match_players %}
                     <option value="{{ p1.id }}">
                         {{ p1.name }}
@@ -28,7 +28,7 @@
             <select name="player2_id" 
                     class="w-full text-(--dark-green) p-2 border rounded-sm" 
                     required>
-                <option value="">Player 2</option>
+                <option value="">Player Waiting</option>
                 {% for p2 in players_waiting %}
                     <option value="{{ p2.id }}">
                         {{ p2.name }}
