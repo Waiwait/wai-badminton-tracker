@@ -17,14 +17,9 @@ class Player(models.Model):
 
     @staticmethod
     def shorten_name(name):
-        parts = name.split()
 
-        if len(parts) >= 2:
-            # Take first 4 letters of first name + first 2 letters of second name
-            return f"{parts[0][:4]}. {parts[1][:2]}."
-
-        if len(name) > 7:
-            return f"{name[:6]}.."
+        if len(name) > 10:
+            return f"{name[:10]}."
 
         return name
 
@@ -39,7 +34,7 @@ class Player(models.Model):
             else "text-blue-300 font-medium"
         )
 
-        if shorten_name and len(name) > 7:
+        if shorten_name and len(name) > 10:
             name_short = Player.shorten_name(name)
         else:
             name_short = name
