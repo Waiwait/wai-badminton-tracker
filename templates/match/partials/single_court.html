@@ -50,19 +50,21 @@
             name="team1_score" 
             min="0" 
             max="30" 
-            value="{{ team1_score|default:0 }}"
+            value="{{ team1_score }}"
             class="w-20 text-(--dark-green) p-1 border rounded-sm"
             placeholder="21"
+            oninvalid="this.setCustomValidity('Please enter the score, set score to 0-0 to cancel the game')"
             required>
 
         <input type="number" 
             name="team2_score" 
             min="0" 
             max="30" 
-            value="{{ team2_score|default:0 }}"
+            value="{{ team2_score }}"
             class="w-20 text-(--dark-green) p-1 border rounded-sm"
             placeholder="21"
-            required>                
+            oninvalid="this.setCustomValidity('Please enter the score, set score to 0-0 to cancel the game')"
+            required>
     </div>
 
     <button type="button" class="primary-button mt-4 finish-match-btn" data-court-number="{{ court.number }}">Finish Match</button>
