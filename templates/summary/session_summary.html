@@ -15,7 +15,7 @@
 <div class="space-y-2 px-4">
 
     {% for player in players_in_session %}
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-gray-100 dark:bg-gray-800 p-3 rounded-sm
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-gray-800 p-3 rounded-sm
             {% if player.rank <= 3 %}border-2 border-yellow-500{% endif %}">
 
             <div class="font-medium flex items-center gap-2 min-w-0">

@@ -147,12 +147,12 @@ def render_pairs(session):
         {
             "type": "gender",
             "value": "M",
-            "display": "MEN",
+            "display": "MEN_ONLY",
         },
         {
             "type": "gender",
             "value": "F",
-            "display": "WOMEN",
+            "display": "WOMEN_ONLY",
         },
     ]
 
@@ -186,15 +186,36 @@ def render_switch_players(session):
         matchparticipant__match_team__match__finished=False
     ).distinct()
 
-    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+    in_match_ids = in_match_players.values_list("id", flat=True)
+
+    upcoming_match = UpcomingMatch.objects.filter(
+            session=session
+        ).order_by("-value").first()
+
+    if upcoming_match:
+        upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
+        upcoming_players = Player.objects.filter(id__in=upcoming_player_ids)
+        upcoming_ids = upcoming_players.values_list("id", flat=True)
+
+        in_match_or_upcoming_player_ids = set(in_match_ids) | set(upcoming_ids)
+    else:
+        in_match_or_upcoming_player_ids = in_match_ids
+
+
+    in_match_or_upcoming_players = session_players.filter(
+        id__in=in_match_or_upcoming_player_ids
+    )
+
+    waiting_and_not_in_upcoming_players = session_players.exclude(
+        id__in=in_match_or_upcoming_player_ids
+    ).filter(
         playersession__pause=False,
-        playersession__session=session,
     )
 
 
     return {
-        'in_match_players': in_match_players,
-        'players_waiting': players_waiting,
+        'in_match_or_upcoming_players': in_match_or_upcoming_players,
+        'waiting_and_not_in_upcoming_players': waiting_and_not_in_upcoming_players,
         'session': session, 
     }
 
@@ -226,7 +247,7 @@ def waiting_players(request, uuid):
             "id": ps.player.id,
             "name": ps.player.name,
             "name_played": mark_safe(
-                f"{Player.format_name_gender(ps.player.name, ps.player.gender == 'F')}<sup>{ps.games_played}|{ps.games_skipped + ps.games_played}</sup>"
+                f"{Player.format_name_gender(ps.player.name, ps.player.gender == 'F')}<sup>{ps.player.mu}  {ps.games_played}|{ps.games_skipped + ps.games_played}</sup>"
             ),
         }
         for ps in player_sessions

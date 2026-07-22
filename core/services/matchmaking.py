@@ -225,7 +225,7 @@ def eval_gender_balance(teams):
         return -1                                     # Worst case
 
     else:
-        return 0.4
+        return 0.2
 
 
 def eval_match_fairness(teams):
