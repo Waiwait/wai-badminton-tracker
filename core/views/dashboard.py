@@ -42,6 +42,7 @@ def session_events(request, uuid):
 
     return response
 
+
 def session_detail(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
     return render(request, "match/session_dashboard.html", {

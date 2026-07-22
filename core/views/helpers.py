@@ -395,6 +395,7 @@ def generate_upcoming_match(request, uuid):
         triggers={
             "upcoming_match_update": True,
             "all_courts_update": True,
+            "switch_players_update": True,
         }
     )
 
@@ -517,10 +518,9 @@ def add_upcoming_match_to_court(
             "players_update": True,
             "upcoming_match_update": True,
             "all_courts_update": True,
-            "switch_players_update": True,
+            
         }
     )
-
 
 
 @user_passes_test(is_admin)
@@ -535,11 +535,11 @@ def delete_upcoming_match(request, uuid, upcoming_match_id):
     return hx_response(
         message="Deleted/regenerated the upcoming match. Note: there is a fixed limit of matches that can be regenerated",
         triggers={
+            "switch_players_update": True,
             "upcoming_match_update": True,
             "all_courts_update": True,
         }
     )
-
 
 
 @user_passes_test(is_admin)
@@ -552,6 +552,7 @@ def delete_upcoming_matches(request, uuid):
 
     return hx_response(
         triggers={
+            "switch_players_update": True,
             "upcoming_match_update": True,
             "all_courts_update": True,
         }
@@ -753,81 +754,93 @@ def add_new_player(request, uuid):
     )
 
 
-
 @user_passes_test(is_admin)
 def switch_players(request, uuid):
 
-    p1_id = request.POST.get(
-        "player1_id"
-    )
 
-    p2_id = request.POST.get(
-        "player2_id"
-    )
+    UPDATE_TRIGGERS = {
+        "players_update": True,
+        "switch_players_update": True,
+        "upcoming_match_update": True,
+        "all_courts_update": True
+    }
 
+    p1_id = request.POST.get("player1_id")
+    p2_id = request.POST.get("player2_id")
 
     if not p1_id or not p2_id:
-
-        return hx_response(
-            message="Missing players",
-            status=400
-        )
-
+        return hx_response(message="Missing players", status=400)
 
     if p1_id == p2_id:
+        return hx_response(message="Cannot switch same player", status=400)
+
+    session = get_object_or_404(Session, uuid=uuid)
+
+    player1 = get_object_or_404(Player, pk=p1_id)
+    player2 = get_object_or_404(Player, pk=p2_id)
+
+    # Player 2 cannot already be in an active match or upcoming match
+    # ==
+    if MatchParticipant.objects.filter(
+        player=player2,
+        match_team__match__court__session=session,
+        match_team__match__finished=False,
+    ).exists():
+        return hx_response(
+            message="Player 2 is already in an active match",
+            status=400,
+        )
+
+    upcoming_match = (
+        UpcomingMatch.objects.filter(session=session)
+        .order_by("-value")
+        .first()
+    )
+
+    player_ids  = []
+    if upcoming_match:
+        player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
+        if player2.id in player_ids:
+            return hx_response(
+                message="Player 2 is in the upcoming match",
+                status=400,
+            )
+    # ==
+
+    # Find player1 in an active match
+    mp1 = MatchParticipant.objects.filter(
+        player=player1,
+        match_team__match__court__session=session,
+        match_team__match__finished=False,
+    ).first()
+
+    if mp1:
+        with transaction.atomic():
+            mp1.player = player2
+            mp1.save()
 
         return hx_response(
-            message="Cannot switch same user",
-            status=400
-        )
-
-
-    session = get_object_or_404(
-        Session,
-        uuid=uuid
-    )
-
-
-    player_1 = get_object_or_404(
-        Player,
-        id=p1_id
-    )
-
-    player_2 = get_object_or_404(
-        Player,
-        id=p2_id
-    )
-
-
-    with transaction.atomic():
-
-        mp1 = get_object_or_404(
-            MatchParticipant,
-            player=player_1,
-            match_team__match__court__session=session,
-            match_team__match__finished=False
-        )
-
-
-        if MatchParticipant.objects.filter(
-            match_team=mp1.match_team,
-            player=player_2
-        ).exists():
-
-            return hx_response(
-                message="Player already in match",
-                status=400
+            message="Player in active match switched!",
+            triggers=UPDATE_TRIGGERS
             )
 
+    if not upcoming_match:
+        return hx_response(
+            message="Player 1 is not in an active or upcoming match",
+            status=400,
+        )
 
-        mp1.player = player_2
-        mp1.save()
+    if player1.id not in player_ids:
+        return hx_response(
+            message="Player 1 is not in the upcoming match",
+            status=400,
+        )
 
+    player_ids[player_ids.index(player1.id)] = player2.id
+    upcoming_match.player_ids = ",".join(map(str, player_ids))
+    upcoming_match.save()
 
     return hx_response(
-        triggers={
-            "players_update": True,
-            "switch_players_update": True,
-            "all_courts_update": True
-        }
-    )
+            message="Player in upcoming match switched!",
+            triggers=UPDATE_TRIGGERS
+        )

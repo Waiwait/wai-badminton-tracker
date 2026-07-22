@@ -276,7 +276,7 @@ class MatchmakingConfig(models.Model):
                 'skill_difference_weight': 4,
                 'played_with_weight': 7,
                 'played_against_weight': 4,
-                'gender_weight': 2,
+                'gender_weight': 4,
             }
         )
         return config

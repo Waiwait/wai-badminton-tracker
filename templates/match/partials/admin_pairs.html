@@ -1,4 +1,4 @@
-<h2 class="text-center font-bold mb-4">Pairs</h2>
+<h2 class="text-center font-bold mb-4">Pairs/Gender Partners</h2>
 
 <!-- Add New Pair Form -->
 <form method="post" 
@@ -54,7 +54,7 @@
 
 <div class="space-y-2">
     {% for pair in pairs %}
-        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+        <div class="flex justify-between items-center bg-gray-800 p-3 rounded-sm">
             <div class="font-medium">
                 {{ pair.get_name }}
             </div>
@@ -72,7 +72,7 @@
         </div>
     {% endfor %}
     {% for pair in gender_pairs %}
-        <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+        <div class="flex justify-between items-center bg-gray-800 p-3 rounded-sm">
             <div class="font-medium">
                 {{ pair.get_name }}
             </div>
