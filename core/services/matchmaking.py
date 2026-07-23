@@ -545,4 +545,16 @@ def matchmaking(players_waiting, session, top_n=5, max_players_before_sampling=1
         reverse=True
     )
 
+    # guarantees uniqueness
+    used_scores = set()
+
+    for match in sorted_matches:
+        score = round(match["score"], 2)
+
+        while score in used_scores:
+            score = round(score - 0.01, 2)
+
+        match["score"] = score
+        used_scores.add(score)
+
     return sorted_matches[:top_n]

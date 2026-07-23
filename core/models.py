@@ -178,7 +178,8 @@ class UpcomingMatch(models.Model):
     value = models.DecimalField(max_digits=5, decimal_places=3,)
     # should be id1,id2,id3,id4 (first 2 should be team1, last2 should be team2)
     player_ids = models.CharField(max_length=100)
-    
+    queue_number =  models.PositiveIntegerField(default=0, null=False)
+
 
 
 class Pair(models.Model):

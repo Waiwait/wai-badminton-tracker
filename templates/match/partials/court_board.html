@@ -31,13 +31,5 @@
             </div>
 
         {% endif %}
-        <div 
-            id="upcoming-match"
-            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80  text-center mt-4"
-            hx-get="{% url 'upcoming_match' uuid=session.uuid %}"
-            hx-trigger="load, upcoming_match_update from:body"
-            hx-swap="innerHTML">
-        Loading Court...
-        </div>
     </div>
 </div>

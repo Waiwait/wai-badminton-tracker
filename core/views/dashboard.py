@@ -1,7 +1,7 @@
 
 from ..models import Session, Match, Court, UpcomingMatch
 from ..services.permissions import is_admin
-from ..services.renders import render_courts, render_single_court, render_upcoming_match
+from ..services.renders import render_courts, render_single_court, render_upcoming_match, render_upcoming_matches
 from ..services.match_state import is_cancelled_game
 
 from django.shortcuts import render, get_object_or_404
@@ -115,12 +115,20 @@ def session_history(request, uuid):
     })
 
 
-def upcoming_match(request, uuid):
+def upcoming_match(request, uuid, queue_number):
     session = get_object_or_404(Session, uuid=uuid)
 
     upcoming_match = UpcomingMatch.objects.filter(
-        session=session
+        session=session,
+        queue_number=queue_number
     ).order_by("-value").first()
 
 
-    return render(request, "match/partials/upcoming_match.html", render_upcoming_match(request, session, upcoming_match))
+    return render(request, "match/partials/upcoming_match.html", render_upcoming_match(request, session, upcoming_match, queue_number))
+
+
+
+def upcoming_matches(request, uuid):
+    session = get_object_or_404(Session, uuid=uuid)
+
+    return render(request, "match/partials/upcoming_matches.html", render_upcoming_matches(request, session))
