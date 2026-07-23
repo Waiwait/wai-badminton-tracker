@@ -21,9 +21,14 @@ urlpatterns = [
     ),
 
 
-    path('session/<uuid:uuid>/upcoming-match/', 
+    path('session/<uuid:uuid>/upcoming-match/<int:queue_number>/', 
         dashboard.upcoming_match, 
         name='upcoming_match'
+    ),
+
+    path('session/<uuid:uuid>/upcoming-matches/', 
+            dashboard.upcoming_matches, 
+            name='upcoming_matches'
     ),
 
     # admin
@@ -51,7 +56,7 @@ urlpatterns = [
     ),
 
     path(
-        "session/<uuid:uuid>/generate-upcoming-match/",
+        "session/<uuid:uuid>/generate-upcoming-match/<int:queue_number>/",
         helpers.generate_upcoming_match,
         name="generate_upcoming_match",
     ),
@@ -68,7 +73,7 @@ urlpatterns = [
         name="delete_upcoming_match",
     ),
     path(
-        "session/<uuid:uuid>/delete-upcoming-matches/",
+        "session/<uuid:uuid>/delete-upcoming-matches/<int:queue_number>/",
         helpers.delete_upcoming_matches,
         name="delete_upcoming_matches",
     ),

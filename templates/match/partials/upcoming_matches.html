@@ -1,0 +1,33 @@
+   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+
+        <div 
+            id="upcoming-match"
+            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80  text-center mt-4"
+            hx-get="{% url 'upcoming_match' uuid=session.uuid queue_number=0 %}"
+            hx-trigger="load, upcoming_match_update_0 from:body"
+            hx-swap="innerHTML">
+        Loading Upcoming Match...
+        </div>
+
+        {% if upcoming_match_0 %}
+            <div 
+                id="upcoming-match-2"
+                class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80  text-center mt-4"
+                hx-get="{% url 'upcoming_match' uuid=session.uuid queue_number=1 %}"
+                hx-trigger="load, upcoming_match_update_1 from:body"
+                hx-swap="innerHTML">
+            Loading Upcoming Match 2...
+            </div>
+        {% endif %}
+        
+        {% if upcoming_match_1 %}
+            <div 
+                id="upcoming-match-3"
+                class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80  text-center mt-4"
+                hx-get="{% url 'upcoming_match' uuid=session.uuid queue_number=2 %}"
+                hx-trigger="load, upcoming_match_update_2 from:body"
+                hx-swap="innerHTML">
+            Loading Upcoming Match 3...
+            </div>
+        {% endif %}
+    </div>

@@ -1,4 +1,4 @@
- <strong class="mb-2">Upcoming Match</strong>
+ <strong class="mb-2">Upcoming Match {{ queue_number_shown }}</strong>
 
 {% if upcoming_match %}
 
@@ -27,18 +27,20 @@
 
 {% if show_admin_panel %}
     Value: {{ value }}
+    
+        <div class="flex gap-2 mt-4 justify-center">
+    {% if show_regenerate_button %}
+            <form method="post"
+                hx-post="{% url 'delete_upcoming_match' uuid=session.uuid upcoming_match_id=upcoming_match_id %}"
+                hx-swap="none">
+                <button type="submit" class="primary-button">
+                    Regenerate
+                </button>
+            </form>
+    {% endif %}
 
-    <div class="flex gap-2 mt-4 justify-center">
         <form method="post"
-            hx-post="{% url 'delete_upcoming_match' uuid=session.uuid upcoming_match_id=upcoming_match_id %}"
-            hx-swap="none">
-            <button type="submit" class="primary-button">
-                Regenerate
-            </button>
-        </form>
-
-        <form method="post"
-            hx-post="{% url 'delete_upcoming_matches' uuid=session.uuid %}"
+            hx-post="{% url 'delete_upcoming_matches' uuid=session.uuid queue_number=queue_number %}"
             hx-swap="none">
             <button type="submit" class="primary-button">
                 Delete
@@ -48,12 +50,13 @@
 {% endif %}
 {% else %}
 
-{% if show_admin_panel %}
+{% if show_admin_panel and show_generate_button %}
+
     <form method="post"
-        hx-post="{% url 'generate_upcoming_match' uuid=session.uuid %}"
+        hx-post="{% url 'generate_upcoming_match' uuid=session.uuid queue_number=queue_number %}"
         hx-swap="none">
         <button type="submit" class="primary-button mt-4">
-            Generate Upcoming Match
+            Generate
         </button>
     </form>
 {% endif %}

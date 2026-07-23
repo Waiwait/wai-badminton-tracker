@@ -1,11 +1,11 @@
 from .permissions import is_admin
 from ..models import Session, Player, PlayerSession, UpcomingMatch, Pair, ClubConfig, GenderPair
 
-import os
-
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+
+from django.db.models import F, Max, Q
 
 
 def render_courts(request, session):
@@ -69,12 +69,29 @@ def render_single_court(request, session, court):
     }
 
 
-def render_upcoming_match(request, session, upcoming_match):
+def render_upcoming_matches(request, session):
+
+    return {
+        "session": session,
+        "upcoming_match_0": UpcomingMatch.objects.filter(session=session, queue_number=0).exists(),
+        "upcoming_match_1": UpcomingMatch.objects.filter(session=session, queue_number=1).exists(),
+    }
+
+
+def render_upcoming_match(request, session, upcoming_match, queue_number):
     if not upcoming_match:
+
+        if queue_number == 0:
+            show_generate_button = True,
+        else: 
+            show_generate_button = UpcomingMatch.objects.filter(session=session, queue_number=queue_number-1).exists()
         return {
             "session": session,
             "upcoming_match": False,
             "show_admin_panel": is_admin(request.user),
+            "queue_number": queue_number,
+            "queue_number_shown": queue_number + 1,
+            "show_generate_button": show_generate_button,
         }
 
     upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
@@ -90,6 +107,8 @@ def render_upcoming_match(request, session, upcoming_match):
             "session": session,
             "upcoming_match": False,
             "show_admin_panel": is_admin(request.user),
+            "queue_number": queue_number,
+            "queue_number_shown": queue_number + 1,
         }
 
     return {
@@ -102,6 +121,9 @@ def render_upcoming_match(request, session, upcoming_match):
         "show_admin_panel": is_admin(request.user),
         "session": session,
         "value": upcoming_match.value,
+        "queue_number": queue_number,
+        "queue_number_shown": queue_number + 1,
+        "show_regenerate_button": not UpcomingMatch.objects.filter(session=session, queue_number=queue_number+1).exists()
     }
 
 
@@ -192,14 +214,28 @@ def render_switch_players(session):
             session=session
         ).order_by("-value").first()
 
-    if upcoming_match:
-        upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
-        upcoming_players = Player.objects.filter(id__in=upcoming_player_ids)
-        upcoming_ids = upcoming_players.values_list("id", flat=True)
 
-        in_match_or_upcoming_player_ids = set(in_match_ids) | set(upcoming_ids)
-    else:
-        in_match_or_upcoming_player_ids = in_match_ids
+    upcoming_matches_dict = UpcomingMatch.objects.filter(
+            session=session
+        ).values(
+            'queue_number',
+        ).annotate(
+            highest_value=Max('value')
+        )
+    
+    in_match_or_upcoming_player_ids = set(in_match_ids)
+    if upcoming_matches_dict.exists():
+        for upcoming_match_dict in upcoming_matches_dict:
+            upcoming_match = UpcomingMatch.objects.filter(
+                session=session,
+                queue_number=upcoming_match_dict['queue_number'],
+                value=upcoming_match_dict['highest_value']
+                ).first()
+
+            upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
+            upcoming_players = Player.objects.filter(id__in=upcoming_player_ids)
+            upcoming_ids = upcoming_players.values_list("id", flat=True)
+            in_match_or_upcoming_player_ids = set(in_match_or_upcoming_player_ids) | set(upcoming_ids)
 
 
     in_match_or_upcoming_players = session_players.filter(

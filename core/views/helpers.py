@@ -17,6 +17,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
 from django.db import models, transaction
+from django.db.models import F, Max, Q
 
 
 def hx_response(message=None, triggers=None, status=200):
@@ -328,7 +329,7 @@ def release_court(request, uuid, court_id):
 
 
 @user_passes_test(is_admin)
-def generate_upcoming_match(request, uuid):
+def generate_upcoming_match(request, uuid, queue_number):
 
     session = get_object_or_404(
         Session,
@@ -344,13 +345,37 @@ def generate_upcoming_match(request, uuid):
         matchparticipant__match_team__match__finished=False
     ).distinct()
 
+
+    highest_values = UpcomingMatch.objects.filter(
+        session=session
+    ).values(
+        'queue_number'
+    ).annotate(
+        highest_value=Max('value')
+    )
+
+    for item in highest_values:
+        UpcomingMatch.objects.filter(
+            session=session,
+            queue_number=item['queue_number']
+        ).exclude(
+            value=item['highest_value']
+        ).delete()
+
+
+    upcoming_player_ids = []
+    for match in UpcomingMatch.objects.filter(session=session):
+        upcoming_player_ids.extend(match.player_ids.split(","))
+
     players_waiting = session_players.exclude(
         id__in=in_match_players
     ).filter(
         playersession__pause=False,
         playersession__session=session,
     )
-
+    players_waiting = players_waiting.exclude(
+            id__in=upcoming_player_ids
+        )
 
     if players_waiting.count() < 4:
         return hx_response(
@@ -386,7 +411,8 @@ def generate_upcoming_match(request, uuid):
         UpcomingMatch.objects.create(
             value=upcoming_match["score"],
             session=session,
-            player_ids=",".join(p_ids)
+            player_ids=",".join(p_ids),
+            queue_number=queue_number,
         )
 
 
@@ -508,9 +534,17 @@ def add_upcoming_match_to_court(
 
 
     UpcomingMatch.objects.filter(
-        session__uuid=uuid
+        session__uuid=uuid,
+        queue_number=0
     ).delete()
 
+    UpcomingMatch.objects.filter(
+        session__uuid=uuid,
+        queue_number__gt=0
+    ).update(
+        queue_number=F('queue_number') - 1
+    )
+    
 
     return hx_response(
         message=f"New match started on Court {court.number}!",
@@ -526,29 +560,56 @@ def add_upcoming_match_to_court(
 @user_passes_test(is_admin)
 def delete_upcoming_match(request, uuid, upcoming_match_id):
 
-    get_object_or_404(
+    session = get_object_or_404(Session, uuid=uuid)
+    upcoming_match = get_object_or_404(
         UpcomingMatch,
         id=upcoming_match_id
-    ).delete()
+    )
+
+    queue_number = upcoming_match.queue_number
+
+
+    upcoming_match.delete()
+    matches_remaining_in_queue = UpcomingMatch.objects.filter(
+        session=session,
+        queue_number=queue_number,
+    ).count()
+
+    if matches_remaining_in_queue == 0:
+        return hx_response(
+            message="Deleted the upcoming match. Allow more players to finish before generating for different games",
+            triggers={
+                "switch_players_update": True,
+                "upcoming_match_update": True,
+                "all_courts_update": True,
+            }
+        )
 
 
     return hx_response(
-        message="Deleted/regenerated the upcoming match. Note: there is a fixed limit of matches that can be regenerated",
+        message=f"Regenerated the upcoming match, {matches_remaining_in_queue} remaining",
         triggers={
             "switch_players_update": True,
-            "upcoming_match_update": True,
-            "all_courts_update": True,
+            f"upcoming_match_update_{queue_number}": True,
         }
     )
 
 
 @user_passes_test(is_admin)
-def delete_upcoming_matches(request, uuid):
+def delete_upcoming_matches(request, uuid, queue_number):
 
-    UpcomingMatch.objects.filter(
-        session__uuid=uuid
-    ).delete()
+    with transaction.atomic():
+        UpcomingMatch.objects.filter(
+            session__uuid=uuid,
+            queue_number=queue_number
+        ).delete()
 
+        UpcomingMatch.objects.filter(
+            session__uuid=uuid,
+            queue_number__gt=queue_number
+        ).update(
+            queue_number=F('queue_number') - 1
+        )
 
     return hx_response(
         triggers={
@@ -761,8 +822,6 @@ def switch_players(request, uuid):
     UPDATE_TRIGGERS = {
         "players_update": True,
         "switch_players_update": True,
-        "upcoming_match_update": True,
-        "all_courts_update": True
     }
 
     p1_id = request.POST.get("player1_id")
@@ -791,20 +850,32 @@ def switch_players(request, uuid):
             status=400,
         )
 
-    upcoming_match = (
-        UpcomingMatch.objects.filter(session=session)
-        .order_by("-value")
-        .first()
-    )
-
-    player_ids  = []
-    if upcoming_match:
-        player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
-        if player2.id in player_ids:
-            return hx_response(
-                message="Player 2 is in the upcoming match",
-                status=400,
-            )
+    upcoming_matches_dict = UpcomingMatch.objects.filter(
+            session=session
+        ).values(
+            'queue_number',
+        ).annotate(
+            highest_value=Max('value')
+        )
+    
+    player_ids_upcoming_matches = []
+    if upcoming_matches_dict.exists():
+        for upcoming_match_dict in upcoming_matches_dict:
+            upcoming_match = UpcomingMatch.objects.filter(
+                session=session,
+                queue_number=upcoming_match_dict['queue_number'],
+                value=upcoming_match_dict['highest_value']
+                ).first()
+            player_ids_match = [int(x) for x in upcoming_match.player_ids.split(",")]
+            if player2.id in player_ids_match:
+                return hx_response(
+                    message="Player 2 is in upcoming match",
+                    status=400,
+                )
+            player_ids_upcoming_matches.append({
+                "player_ids": player_ids_match,
+                "upcoming_match": upcoming_match,
+            })
     # ==
 
     # Find player1 in an active match
@@ -821,26 +892,43 @@ def switch_players(request, uuid):
 
         return hx_response(
             message="Player in active match switched!",
-            triggers=UPDATE_TRIGGERS
+            triggers=UPDATE_TRIGGERS | { "all_courts_update": True }
             )
 
-    if not upcoming_match:
+    if not upcoming_matches_dict.exists():
         return hx_response(
             message="Player 1 is not in an active or upcoming match",
             status=400,
         )
 
-    if player1.id not in player_ids:
-        return hx_response(
-            message="Player 1 is not in the upcoming match",
-            status=400,
-        )
+    for p_ids in player_ids_upcoming_matches:
+        player_ids = p_ids["player_ids"]
+        upcoming_match = p_ids["upcoming_match"]
+        if player1.id in player_ids:
+            player_ids[player_ids.index(player1.id)] = player2.id
+            upcoming_match.player_ids = ",".join(map(str, player_ids))
+            upcoming_match_queue_number = upcoming_match.queue_number
 
-    player_ids[player_ids.index(player1.id)] = player2.id
-    upcoming_match.player_ids = ",".join(map(str, player_ids))
-    upcoming_match.save()
+            with transaction.atomic():
+                upcoming_match.save()
+
+                for item in upcoming_matches_dict:
+                    UpcomingMatch.objects.filter(
+                        session=session,
+                        queue_number=item['queue_number']
+                    ).exclude(
+                        value=item['highest_value']
+                    ).delete()
+                
+    
+            return hx_response(
+                    message="Player in upcoming match switched!",
+                    triggers=UPDATE_TRIGGERS | { f"upcoming_match_update_{upcoming_match_queue_number}": True }
+                )
 
     return hx_response(
-            message="Player in upcoming match switched!",
-            triggers=UPDATE_TRIGGERS
-        )
+        message="Player 1 is not in any upcoming matches",
+        status=400,
+    )
+
+    
