@@ -1,8 +1,17 @@
 <h2 class="text-center text-2xl font-bold mb-4">Match History</h2>
 
-<div class="space-y-2 mb-6">
+<div class="flex justify-end mb-4">
+    <input
+        id="historyFilter"
+        type="text"
+        placeholder="🔍 Search..."
+        class="w-64 p-2 rounded-sm bg-white border border-gray-300 text-black placeholder-gray-500"
+    >
+</div>
+
+<div id="historyList" class="space-y-2 mb-6">
     {% for item in history %}
-        <div class="flex justify-between items-center bg-gray-800 p-3 rounded-sm">
+        <div class="history-item flex justify-between items-center bg-gray-800 p-3 rounded-sm">
             <div class="font-medium">
                 [Court {{ item.court }}] {{ item.line }}
             </div>
@@ -11,3 +20,16 @@
         <p class="text-gray-500 italic">No history yet.</p>
     {% endfor %}
 </div>
+
+<script>
+document.getElementById('historyFilter').addEventListener('input', function () {
+    const filter = this.value.toLowerCase();
+    const items = document.querySelectorAll('.history-item');
+
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+
+        item.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+</script>

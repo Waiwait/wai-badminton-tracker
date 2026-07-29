@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from django.db.models import F, Max, Q
+from django.db.models.functions import Lower
 
 
 def render_courts(request, session):
@@ -197,6 +198,36 @@ def render_pairs(session):
     }
 
 
+def __upcoming_player_ids(
+        session: Session,
+    ) -> str:
+
+    upcoming_match = UpcomingMatch.objects.filter(
+                session=session
+            ).order_by("-value").first()
+    
+    
+    upcoming_matches_dict = UpcomingMatch.objects.filter(
+            session=session
+        ).values(
+            'queue_number',
+        ).annotate(
+            highest_value=Max('value')
+        )
+
+    upcoming_player_ids = []
+    for upcoming_match_dict in upcoming_matches_dict:
+        upcoming_match = UpcomingMatch.objects.filter(
+            session=session,
+            queue_number=upcoming_match_dict['queue_number'],
+            value=upcoming_match_dict['highest_value']
+            ).first()
+
+        upcoming_player_ids += [int(x) for x in upcoming_match.player_ids.split(",")]
+
+    return upcoming_player_ids
+    
+
 def render_switch_players(session):
 
     session_players = Player.objects.filter(
@@ -210,32 +241,14 @@ def render_switch_players(session):
 
     in_match_ids = in_match_players.values_list("id", flat=True)
 
-    upcoming_match = UpcomingMatch.objects.filter(
-            session=session
-        ).order_by("-value").first()
-
-
-    upcoming_matches_dict = UpcomingMatch.objects.filter(
-            session=session
-        ).values(
-            'queue_number',
-        ).annotate(
-            highest_value=Max('value')
-        )
     
     in_match_or_upcoming_player_ids = set(in_match_ids)
-    if upcoming_matches_dict.exists():
-        for upcoming_match_dict in upcoming_matches_dict:
-            upcoming_match = UpcomingMatch.objects.filter(
-                session=session,
-                queue_number=upcoming_match_dict['queue_number'],
-                value=upcoming_match_dict['highest_value']
-                ).first()
 
-            upcoming_player_ids = [int(x) for x in upcoming_match.player_ids.split(",")]
-            upcoming_players = Player.objects.filter(id__in=upcoming_player_ids)
-            upcoming_ids = upcoming_players.values_list("id", flat=True)
-            in_match_or_upcoming_player_ids = set(in_match_or_upcoming_player_ids) | set(upcoming_ids)
+    upcoming_player_ids = __upcoming_player_ids(session)
+    if upcoming_player_ids:
+        upcoming_players = Player.objects.filter(id__in=upcoming_player_ids)
+        upcoming_ids = upcoming_players.values_list("id", flat=True)
+        in_match_or_upcoming_player_ids = set(in_match_or_upcoming_player_ids) | set(upcoming_ids)
 
 
     in_match_or_upcoming_players = session_players.filter(
@@ -268,9 +281,11 @@ def waiting_players(request, uuid):
         matchparticipant__match_team__match__court__session=session,
         matchparticipant__match_team__match__finished=False
     ).distinct()
-    
 
-    players_waiting = session_players.exclude(id__in=in_match_players).filter(
+
+    upcoming_player_ids = __upcoming_player_ids(session)
+
+    players_waiting = session_players.exclude(id__in=in_match_players).exclude(id__in=upcoming_player_ids).filter(
         playersession__session=session,
         playersession__pause=False)
 
@@ -301,7 +316,7 @@ def paused_players(request, uuid):
     players = Player.objects.filter(
         playersession__session=session,
         playersession__pause=True
-    )
+    ).order_by(Lower("name"))
 
     return render(request, "match/partials/paused_list.html", {
         "players": players,

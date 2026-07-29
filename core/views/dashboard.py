@@ -127,7 +127,6 @@ def upcoming_match(request, uuid, queue_number):
     return render(request, "match/partials/upcoming_match.html", render_upcoming_match(request, session, upcoming_match, queue_number))
 
 
-
 def upcoming_matches(request, uuid):
     session = get_object_or_404(Session, uuid=uuid)
 
