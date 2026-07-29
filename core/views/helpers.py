@@ -419,6 +419,7 @@ def generate_upcoming_match(request, uuid, queue_number):
     return hx_response(
         message="Matchmaking successful! Add upcoming match to a free court or regenerate",
         triggers={
+            "players_update": True,
             "upcoming_match_update": True,
             "all_courts_update": True,
             "switch_players_update": True,
@@ -589,6 +590,7 @@ def delete_upcoming_match(request, uuid, upcoming_match_id):
     return hx_response(
         message=f"Regenerated the upcoming match, {matches_remaining_in_queue} remaining",
         triggers={
+            "players_update": True,
             "switch_players_update": True,
             f"upcoming_match_update_{queue_number}": True,
         }
@@ -613,6 +615,7 @@ def delete_upcoming_matches(request, uuid, queue_number):
 
     return hx_response(
         triggers={
+            "players_update": True,
             "switch_players_update": True,
             "upcoming_match_update": True,
             "all_courts_update": True,
