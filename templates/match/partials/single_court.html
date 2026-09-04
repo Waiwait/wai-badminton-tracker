@@ -94,11 +94,11 @@
         <form method="post" 
             hx-post="{% url 'release_court' uuid=session.uuid court_id=court.id %}"
             hx-swap="none">
-            <button type="submit" class="primary-button mt-4">Release Court</button>
+            <button type="submit" class="primary-button mt-4">Disable Court</button>
         </form>
 
     {% elif not active %}
-        <p class="text-gray-500 italic">Court paused.</p>
+        <p class="text-gray-500 italic">Court Disabled.</p>
     {% else %}
         <p class="text-gray-500 italic">Waiting for match.</p>
 

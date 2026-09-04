@@ -1,7 +1,7 @@
 from ..models import (
     Session, Player, Match, Court, MatchTeam,
     MatchParticipant, PlayerSession, UpcomingMatch,
-    Pair, GenderPair
+    Pair, GenderPair, ClubConfig
 )
 from ..services.permissions import is_admin
 from ..services.session_membership import add_player, remove_player
@@ -267,6 +267,7 @@ def add_court(request, uuid):
         active=False
     ).order_by("number").first()
 
+    max_courts = int(ClubConfig.get("max_courts", "4"))
     if court:
         court.active = True
         court.save()
@@ -278,7 +279,7 @@ def add_court(request, uuid):
             )["number__max"] or 0
         )
 
-        if last_number <= 3:
+        if last_number <= max_courts-1:
             court = Court.objects.create(
                 session=session,
                 number=last_number + 1,
@@ -287,7 +288,7 @@ def add_court(request, uuid):
 
         else:
             return hx_response(
-                message="Maximum of 4 courts allowed"
+                message=f"Maximum of {max_courts} courts allowed. Change this in club config"
             )
 
     return hx_response(

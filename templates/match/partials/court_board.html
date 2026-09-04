@@ -1,20 +1,32 @@
 <div id="court-board">
-    <h2 class="text-center text-2xl font-bold mb-4"> {{  club_name  }} - {{ session.date }} @ {{ session.venue }} </h2>
+    <h2 class="text-center text-2xl font-bold mb-4">
+        {{ club_name }} - {{ session.date }} @ {{ session.venue }}
+    </h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb23">
-        {% for court_id in court_ids %}
-        
-        <div 
-            id="court-{{ court_id }}"
-            class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80 text-center"
-            hx-get="{% url 'single_court' uuid=session.uuid court_id=court_id %}"
-            hx-trigger="load, court_{{ court_id }}_update  from:body, all_courts_update from:body"
-            hx-swap="innerHTML">
-        Loading Court...
+    {% for board in court_boards %}
+
+        <div class="mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                {% for court_id in board %}
+
+                    <div 
+                        id="court-{{ court_id }}"
+                        class="flex flex-col items-center p-4 bg-[#203A43]/60 rounded-md shadow border border-[#203A43]/80 text-center"
+                        hx-get="{% url 'single_court' uuid=session.uuid court_id=court_id %}"
+                        hx-trigger="load, court_{{ court_id }}_update from:body, all_courts_update from:body"
+                        hx-swap="innerHTML">
+
+                        Loading Court...
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
         </div>
 
-        {% endfor %}
-    </div>
+    {% endfor %}
 
     <div class="flex flex-col items-center space-y-4">
         {% if show_admin_panel %}
@@ -23,13 +35,14 @@
                 <form method="post" 
                     hx-post="{% url 'add_court' uuid=session.uuid %}"
                     hx-swap="none">
+
                     <button type="submit" class="primary-button mt-4">
                         Add Court
                     </button>
+
                 </form>
 
             </div>
-
         {% endif %}
     </div>
 </div>

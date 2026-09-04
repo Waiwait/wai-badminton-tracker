@@ -13,10 +13,17 @@ def render_courts(request, session):
 
     courts = session.courts.all().order_by("number")
 
+    court_ids = [court.id for court in courts]
+    court_boards = [
+        court_ids[i:i + 4]
+        for i in range(0, len(court_ids), 4)
+    ]
+
     return {
         "club_name": ClubConfig.get("club_name", "WBT"),
         "session": session,
-        "court_ids": [court.id for court in courts],
+        "court_ids": court_ids,
+        "court_boards":court_boards,
         "show_admin_panel": is_admin(request.user),
     }
 
