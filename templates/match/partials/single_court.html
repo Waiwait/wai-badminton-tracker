@@ -70,11 +70,19 @@
     </div>
 
     <button type="button" class="primary-button mt-4 finish-match-btn" data-court-number="{{ court.number }}">Finish Match</button>
-    <div class="confirm-score z-10 bg-[rgba(0,0,0,0.5)] absolute top-0 bottom-0 left-0 right-0 hidden">
-        <div class="absolute bg-(--light-teal) p-5 rounded-sm top-[50%] left-[50%] transform -translate-x-[50%] -translate-y-[50%]">
-            <div class="text-sm mt-2 font-bold score-text">Submit the score 0 - 0 for court {{court.number}}</div>
-            <button type="submit" class="primary-button mt-4 submit-score-btn">Submit Score</button>
-            <button type="button" class="primary-button mt-4 cancel-score-btn">Cancel</button>
+    <div class="confirm-score fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] hidden">
+        <div class="absolute bg-(--light-teal) p-5 rounded-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div class="text-sm mt-2 font-bold score-text">
+                Submit the score 0 - 0 for court {{ court.number }}
+            </div>
+
+            <button type="submit" class="primary-button mt-4 submit-score-btn">
+                Submit Score
+            </button>
+
+            <button type="button" class="primary-button mt-4 cancel-score-btn">
+                Cancel
+            </button>
         </div>
     </div>
 </form>
