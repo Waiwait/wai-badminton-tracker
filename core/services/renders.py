@@ -260,13 +260,13 @@ def render_switch_players(session):
 
     in_match_or_upcoming_players = session_players.filter(
         id__in=in_match_or_upcoming_player_ids
-    )
+    ).order_by("name")
 
     waiting_and_not_in_upcoming_players = session_players.exclude(
         id__in=in_match_or_upcoming_player_ids
     ).filter(
         playersession__pause=False,
-    )
+    ).order_by("name")
 
 
     return {
