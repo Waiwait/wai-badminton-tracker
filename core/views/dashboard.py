@@ -1,5 +1,5 @@
 
-from ..models import Session, Match, Court, UpcomingMatch
+from ..models import Session, Match, Court, UpcomingMatch, ClubConfig
 from ..services.permissions import is_admin
 from ..services.renders import render_courts, render_single_court, render_upcoming_match, render_upcoming_matches
 from ..services.match_state import is_cancelled_game
@@ -48,6 +48,7 @@ def session_detail(request, uuid):
     return render(request, "match/session_dashboard.html", {
         "session": session,
         "show_admin_panel": is_admin(request.user),
+        "admin_dashboard_refresh_seconds": ClubConfig.get("admin_dashboard_refresh_seconds", "99999"),
     })
 
 

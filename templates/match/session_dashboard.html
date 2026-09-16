@@ -24,7 +24,7 @@
         <div
             hx-get="{% url 'court_board' uuid=session.uuid %}"
             {% if show_admin_panel %}
-                hx-trigger="load, every 120s, court_board_update from:body"
+                hx-trigger="load, every {{ admin_dashboard_refresh_seconds }}s, court_board_update from:body"
             {% else %}
                 hx-trigger="load, every 30s"
             {% endif %}
@@ -38,7 +38,7 @@
         <div
             hx-get="{% url 'upcoming_matches' uuid=session.uuid %}"
             {% if show_admin_panel %}
-                hx-trigger="load, every 120s, upcoming_match_update from:body"
+                hx-trigger="load, every {{ admin_dashboard_refresh_seconds }}s, upcoming_match_update from:body"
             {% else %}
                 hx-trigger="load, every 30s"
             {% endif %}
@@ -59,7 +59,7 @@
         <div
             hx-get="{% url 'session_history' uuid=session.uuid %}"
             {% if show_admin_panel %}
-                hx-trigger="load, every 120s, history_update from:body"
+                hx-trigger="load, every {{ admin_dashboard_refresh_seconds }}s, history_update from:body"
             {% else %}
                 hx-trigger="load, every 30s"
             {% endif %}
