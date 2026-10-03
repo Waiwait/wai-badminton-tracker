@@ -90,6 +90,7 @@ class PlayerSession(models.Model):
     games_skipped = models.IntegerField(default = 0)
     games_played = models.IntegerField(default = 0)
     pause = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("session", "player")
@@ -296,4 +297,3 @@ class ClubConfig(models.Model):
 
             )
         return obj.value
-    

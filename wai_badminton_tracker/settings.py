@@ -72,3 +72,9 @@ if not os.environ.get('DATABASE_URL'):
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Keep the user logged in even after closing the browser
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  
+
+# Set the loan/session period in seconds (e.g., 120 days)
+SESSION_COOKIE_AGE = 120 * 60 * 24 * 60  

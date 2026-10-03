@@ -935,4 +935,16 @@ def switch_players(request, uuid):
         status=400,
     )
 
-    
+@user_passes_test(is_admin)
+def toggle_payment(request, player_session_id):
+    player_session = get_object_or_404(
+        PlayerSession,
+        id=player_session_id,
+    )
+
+    player_session.paid = not player_session.paid
+    player_session.save(update_fields=["paid"])
+
+    return hx_response(
+        message="Success",
+    )
