@@ -78,3 +78,5 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Set the loan/session period in seconds (e.g., 120 days)
 SESSION_COOKIE_AGE = 120 * 60 * 24 * 60  
+
+LOGIN_URL=  "/admin/login/"

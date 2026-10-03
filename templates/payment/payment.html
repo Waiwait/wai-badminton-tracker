@@ -2,8 +2,12 @@
 
 {% block content %}
 
+{% if show_admin_panel %}
+
 <div id="payment-container" class="w-full">
     {% include "payment/partials/payment_table.html" %}
 </div>
+
+{% endif %}
 
 {% endblock %}

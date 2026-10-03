@@ -12,7 +12,7 @@
             ← Previous Month
         </button>
 
-        <h2 class="text-center font-bold text-xl  min-w-[160px]">
+        <h2 class="text-center font-bold text-xl min-w-[160px]">
             {{ month_name }}
         </h2>
 
@@ -23,7 +23,7 @@
             hx-target="#payment-container"
             hx-swap="innerHTML"
         >
-             Next Month →
+            Next Month →
         </button>
 
     </div>
@@ -36,19 +36,15 @@
             <thead>
                 <tr class="border-b border-(--dark-green)">
 
-                    <th class="text-left p-3 ">
+                    <th class="text-left p-3">
                         Player
                     </th>
 
                     {% for session in sessions %}
-                        <th class="text-center p-3 whitespace-nowrap ">
+                        <th class="text-center p-3 whitespace-nowrap">
                             {{ session.date|date:"jS" }}
                         </th>
                     {% endfor %}
-
-                    <th class="text-center p-3 ">
-                        Games
-                    </th>
 
                 </tr>
             </thead>
@@ -60,14 +56,16 @@
 
                     <tr class="border-b border-(--dark-green)">
 
-                        <td class="p-3 font-medium whitespace-nowrap ">
+                        <td class="p-3 font-medium whitespace-nowrap">
                             {{ player.name }}
                         </td>
 
                         {% for cell in player.session_cells %}
 
                             <td class="px-4 py-3 text-center">
+
                                 {% if cell.player_session_id %}
+
                                     <div class="flex items-center justify-center gap-2">
 
                                         <form
@@ -89,16 +87,16 @@
                                         <span>{{ cell.games_played }}</span>
 
                                     </div>
+
                                 {% else %}
+
                                     <span class="opacity-40">—</span>
+
                                 {% endif %}
+
                             </td>
 
                         {% endfor %}
-
-                        <td class="p-3 text-center font-bold ">
-                            {{ player.games_played }}
-                        </td>
 
                     </tr>
 
@@ -106,8 +104,8 @@
 
                     <tr>
                         <td
-                            colspan="{{ sessions|length|add:2 }}"
-                            class="text-center p-6  opacity-60"
+                            colspan="{{ sessions|length|add:1 }}"
+                            class="text-center p-6 opacity-60"
                         >
                             No players found for this month.
                         </td>

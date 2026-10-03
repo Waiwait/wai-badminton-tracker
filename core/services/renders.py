@@ -362,10 +362,12 @@ def render_payment_data(request):
     next_year, next_month_number = next_month(year, month)
 
     sessions = list(
-        Session.objects.filter(
+        Session.objects
+        .filter(
             date__gte=start_date,
             date__lt=end_date,
-        ).order_by("date")
+        )
+        .order_by("date")
     )
 
     player_sessions = (
@@ -404,15 +406,13 @@ def render_payment_data(request):
             cell = player["sessions"].get(session.id)
 
             if cell and cell["games_played"] > 0:
-                games_played = cell["games_played"]
-
                 player["sessions_attended"] += 1
 
                 player["session_cells"].append({
                     "session": session,
                     "player_session_id": cell["player_session_id"],
                     "paid": cell["paid"],
-                    "games_played": games_played,
+                    "games_played": cell["games_played"],
                 })
 
             else:
@@ -423,41 +423,24 @@ def render_payment_data(request):
                     "games_played": 0,
                 })
 
-    for player in players.values():
-        print(
-            player["name"],
-            "ATTENDED:",
-            player["sessions_attended"],
-            "GAMES:",
-            [cell["games_played"] for cell in player["session_cells"]],
-        )
-
-    print("SORTED:")
-    for player in sorted(
+    players = sorted(
         players.values(),
         key=lambda player: (
             -player["sessions_attended"],
             player["name"].lower(),
         ),
-    ):
-        print(player["name"], player["sessions_attended"])
-    return {
-        "players": sorted(
-            players.values(),
-            key=lambda player: (
-                -player["sessions_attended"],
-                player["name"].lower(),
-            ),
-        ),
-        "sessions": sessions,
+    )
 
+    return {
+        "players": players,
+        "sessions": sessions,
         "year": year,
         "month": month,
         "month_name": start_date.strftime("%B %Y"),
-
         "previous_year": previous_year,
         "previous_month": previous_month_number,
-
         "next_year": next_year,
         "next_month": next_month_number,
+
+        "show_admin_panel": is_admin(request.user),
     }
