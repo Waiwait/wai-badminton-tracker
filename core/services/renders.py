@@ -345,7 +345,8 @@ def next_month(year, month):
 
     return year, month + 1
 
-def render_payment_data(request):
+
+def render_payment_data(request, show_admin_panel=True, show_missing_only=False):
     today = timezone.now().date()
 
     year = int(request.GET.get("year") or today.year)
@@ -387,6 +388,7 @@ def render_payment_data(request):
                 "id": player_id,
                 "name": player_session.player.name,
                 "sessions_attended": 0,
+                "unpaid_sessions": 0,
                 "sessions": {},
             }
 
@@ -401,12 +403,16 @@ def render_payment_data(request):
     for player in players.values():
         player["session_cells"] = []
         player["sessions_attended"] = 0
+        player["unpaid_sessions"] = 0
 
         for session in sessions:
             cell = player["sessions"].get(session.id)
 
             if cell and cell["games_played"] > 0:
                 player["sessions_attended"] += 1
+
+                if not cell["paid"]:
+                    player["unpaid_sessions"] += 1
 
                 player["session_cells"].append({
                     "session": session,
@@ -423,12 +429,23 @@ def render_payment_data(request):
                     "games_played": 0,
                 })
 
-    players = sorted(
-        players.values(),
+    # Convert dictionary to list
+    players = list(players.values())
+
+    # Only show players with more than one unpaid attended session
+    if show_missing_only:
+        players = [
+            player
+            for player in players
+            if player["unpaid_sessions"] > 0
+        ]
+
+    # Sort by attendance, then name
+    players.sort(
         key=lambda player: (
             -player["sessions_attended"],
             player["name"].lower(),
-        ),
+        )
     )
 
     return {
@@ -441,6 +458,6 @@ def render_payment_data(request):
         "previous_month": previous_month_number,
         "next_year": next_year,
         "next_month": next_month_number,
-
-        "show_admin_panel": is_admin(request.user),
+        "show_missing_only": show_missing_only,
+        "show_admin_panel": is_admin(request.user) and show_admin_panel,
     }

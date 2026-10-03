@@ -1,6 +1,6 @@
 from ..services.permissions import is_admin
 from ..models import Session
-from ..services.renders import render_players, render_pairs, render_switch_players, render_payment_data
+from ..services.renders import render_players, render_pairs, render_switch_players
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
@@ -35,11 +35,4 @@ def new_player(request, uuid):
     return render(request, "match/partials/admin_new_player.html", {"session": session})
 
 
-@user_passes_test(is_admin)
-def render_payment(request):
-    return render(
-        request,
-        "payment/payment.html",
-        render_payment_data(request),
-    )
 

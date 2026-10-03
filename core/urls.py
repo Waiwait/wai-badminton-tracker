@@ -1,4 +1,4 @@
-from .views import dashboard, helpers, admin, import_players, session_summary
+from .views import dashboard, helpers, admin, import_players, session_summary, payments
 from .services import renders
 from django.urls import path
 
@@ -132,10 +132,14 @@ urlpatterns = [
 
     path(
         "payment/",
-        admin.render_payment,
+        payments.render_payment,
         name="render_payment",
     ),
-
+    path(
+        "payment/outstanding/",
+        payments.render_outstanding_payment,
+        name="render_outstanding_payment",
+    ),
     path(
         "payment/toggle/<int:player_session_id>/",
         helpers.toggle_payment,

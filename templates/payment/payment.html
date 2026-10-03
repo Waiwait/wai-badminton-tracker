@@ -8,6 +8,12 @@
     {% include "payment/partials/payment_table.html" %}
 </div>
 
+{% else %}
+
+<div id="payment-container" class="w-full">
+    {% include "payment/partials/payment_table_non_admin.html" %}
+</div>
+
 {% endif %}
 
 {% endblock %}

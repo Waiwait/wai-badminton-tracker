@@ -29,19 +29,23 @@
     </div>
 
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto overflow-y-visible">
 
-        <table class="w-full border-collapse">
+        <table class="w-full border-collapse table-fixed">
 
             <thead>
-                <tr class="border-b border-(--dark-green)">
+                <tr>
 
-                    <th class="text-left p-3">
+                    <th
+                        class="sticky top-0 left-0 z-20 bg-(--background) text-left p-3 w-[180px] border-b-2 border-(--green)"
+                    >
                         Player
                     </th>
 
                     {% for session in sessions %}
-                        <th class="text-center p-3 whitespace-nowrap">
+                        <th
+                            class="sticky top-0 z-10 bg-(--background) text-center p-3 w-[100px] whitespace-nowrap border-b-2 border-(--green)"
+                        >
                             {{ session.date|date:"jS" }}
                         </th>
                     {% endfor %}
@@ -54,15 +58,15 @@
 
                 {% for player in players %}
 
-                    <tr class="border-b border-(--dark-green)">
+                    <tr class="border-b-2 border-(--green)">
 
-                        <td class="p-3 font-medium whitespace-nowrap">
+                        <td class="p-3 font-medium whitespace-nowrap align-middle">
                             {{ player.name }}
                         </td>
 
                         {% for cell in player.session_cells %}
 
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-3 py-3 text-center align-middle">
 
                                 {% if cell.player_session_id %}
 
@@ -84,7 +88,9 @@
                                             >
                                         </form>
 
-                                        <span>{{ cell.games_played }}</span>
+                                        <span class="min-w-[1rem]">
+                                            {{ cell.games_played }}
+                                        </span>
 
                                     </div>
 
