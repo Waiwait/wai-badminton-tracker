@@ -130,6 +130,18 @@ urlpatterns = [
         name="paused_players",
     ),
 
+    path(
+        "payment/",
+        admin.render_payment,
+        name="render_payment",
+    ),
+
+    path(
+        "payment/toggle/<int:player_session_id>/",
+        helpers.toggle_payment,
+        name="toggle_payment",
+    ),
+
     path('import-players/ebadders/', import_players.load_players_page_ebadders, name='import-players-ebadders'),
     path('import-players/superbadders/', import_players.load_players_page_superbadders, name='import-players-superbadders'),
 

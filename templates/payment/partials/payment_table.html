@@ -1,0 +1,122 @@
+<div class="w-full">
+
+    <div class="flex items-center justify-center gap-4 mb-6">
+
+        <button
+            type="button"
+            class="secondary-button px-4 py-2 min-w-[150px] flex items-center justify-center gap-2"
+            hx-get="{% url 'render_payment' %}?year={{ previous_year }}&month={{ previous_month }}"
+            hx-target="#payment-container"
+            hx-swap="innerHTML"
+        >
+            ← Previous Month
+        </button>
+
+        <h2 class="text-center font-bold text-xl min-w-[160px]">
+            {{ month_name }}
+        </h2>
+
+        <button
+            type="button"
+            class="secondary-button px-4 py-2 min-w-[150px] flex items-center justify-center gap-2"
+            hx-get="{% url 'render_payment' %}?year={{ next_year }}&month={{ next_month }}"
+            hx-target="#payment-container"
+            hx-swap="innerHTML"
+        >
+            Next Month →
+        </button>
+
+    </div>
+
+
+    <div class="overflow-x-auto">
+
+        <table class="w-full border-collapse">
+
+            <thead>
+                <tr class="border-b border-(--dark-green)">
+
+                    <th class="text-left p-3">
+                        Player
+                    </th>
+
+                    {% for session in sessions %}
+                        <th class="text-center p-3 whitespace-nowrap">
+                            {{ session.date|date:"jS" }}
+                        </th>
+                    {% endfor %}
+
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+                {% for player in players %}
+
+                    <tr class="border-b border-(--dark-green)">
+
+                        <td class="p-3 font-medium whitespace-nowrap">
+                            {{ player.name }}
+                        </td>
+
+                        {% for cell in player.session_cells %}
+
+                            <td class="px-4 py-3 text-center">
+
+                                {% if cell.player_session_id %}
+
+                                    <div class="flex items-center justify-center gap-2">
+
+                                        <form
+                                            method="post"
+                                            hx-post="{% url 'toggle_payment' player_session_id=cell.player_session_id %}"
+                                            hx-swap="none"
+                                        >
+                                            {% csrf_token %}
+
+                                            <input
+                                                type="checkbox"
+                                                {% if cell.paid %}checked{% endif %}
+                                                onchange="this.form.requestSubmit()"
+                                                class="w-5 h-5 cursor-pointer"
+                                                aria-label="Toggle payment"
+                                            >
+                                        </form>
+
+                                        <span>{{ cell.games_played }}</span>
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="opacity-40">—</span>
+
+                                {% endif %}
+
+                            </td>
+
+                        {% endfor %}
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td
+                            colspan="{{ sessions|length|add:1 }}"
+                            class="text-center p-6 opacity-60"
+                        >
+                            No players found for this month.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

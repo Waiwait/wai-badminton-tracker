@@ -1,3 +1,5 @@
+from datetime import date
+
 from .permissions import is_admin
 from ..models import Session, Player, PlayerSession, UpcomingMatch, Pair, ClubConfig, GenderPair
 
@@ -329,3 +331,116 @@ def paused_players(request, uuid):
         "players": players,
         "session": session,
     })
+
+def previous_month(year, month):
+    if month == 1:
+        return year - 1, 12
+
+    return year, month - 1
+
+
+def next_month(year, month):
+    if month == 12:
+        return year + 1, 1
+
+    return year, month + 1
+
+def render_payment_data(request):
+    today = timezone.now().date()
+
+    year = int(request.GET.get("year") or today.year)
+    month = int(request.GET.get("month") or today.month)
+
+    start_date = date(year, month, 1)
+
+    if month == 12:
+        end_date = date(year + 1, 1, 1)
+    else:
+        end_date = date(year, month + 1, 1)
+
+    previous_year, previous_month_number = previous_month(year, month)
+    next_year, next_month_number = next_month(year, month)
+
+    sessions = list(
+        Session.objects
+        .filter(
+            date__gte=start_date,
+            date__lt=end_date,
+        )
+        .order_by("date")
+    )
+
+    player_sessions = (
+        PlayerSession.objects
+        .filter(session__in=sessions)
+        .select_related("player", "session")
+        .order_by("player__name", "session__date")
+    )
+
+    players = {}
+
+    for player_session in player_sessions:
+        player_id = player_session.player.id
+
+        if player_id not in players:
+            players[player_id] = {
+                "id": player_id,
+                "name": player_session.player.name,
+                "sessions_attended": 0,
+                "sessions": {},
+            }
+
+        player = players[player_id]
+
+        player["sessions"][player_session.session.id] = {
+            "player_session_id": player_session.id,
+            "paid": player_session.paid,
+            "games_played": player_session.games_played,
+        }
+
+    for player in players.values():
+        player["session_cells"] = []
+        player["sessions_attended"] = 0
+
+        for session in sessions:
+            cell = player["sessions"].get(session.id)
+
+            if cell and cell["games_played"] > 0:
+                player["sessions_attended"] += 1
+
+                player["session_cells"].append({
+                    "session": session,
+                    "player_session_id": cell["player_session_id"],
+                    "paid": cell["paid"],
+                    "games_played": cell["games_played"],
+                })
+
+            else:
+                player["session_cells"].append({
+                    "session": session,
+                    "player_session_id": None,
+                    "paid": False,
+                    "games_played": 0,
+                })
+
+    players = sorted(
+        players.values(),
+        key=lambda player: (
+            -player["sessions_attended"],
+            player["name"].lower(),
+        ),
+    )
+
+    return {
+        "players": players,
+        "sessions": sessions,
+        "year": year,
+        "month": month,
+        "month_name": start_date.strftime("%B %Y"),
+        "previous_year": previous_year,
+        "previous_month": previous_month_number,
+        "next_year": next_year,
+        "next_month": next_month_number,
+
+        "show_admin_panel": is_admin(request.user),
+    }
